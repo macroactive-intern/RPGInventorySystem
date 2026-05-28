@@ -1,5 +1,6 @@
 import { BackpackGrid } from "@/components/inventory/BackpackGrid";
 import { EquipmentPanel } from "@/components/inventory/EquipmentPanel";
+import { Hotbar } from "@/components/inventory/Hotbar";
 
 export default function Home() {
   return (
@@ -27,6 +28,7 @@ export default function Home() {
           <EquipmentPanel />
           <BackpackGrid />
         </div>
+        <Hotbar />
       </div>
     </main>
   );
