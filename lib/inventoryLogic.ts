@@ -123,14 +123,22 @@ export function mergeStacks(
 export function splitStack(
   item: InventoryItem,
   amount: number,
+  splitId: UUID = item.id,
 ): SplitStackResult | null {
-  if (item.maxStack <= 1 || amount <= 0 || amount >= item.quantity) {
+  if (
+    item.maxStack <= 1 ||
+    !Number.isInteger(amount) ||
+    amount <= 0 ||
+    amount >= item.quantity
+  ) {
     return null;
   }
 
+  const templateId = getItemTemplateId(item);
+
   return {
-    remaining: { ...item, quantity: item.quantity - amount },
-    split: { ...item, quantity: amount },
+    remaining: { ...item, templateId, quantity: item.quantity - amount },
+    split: { ...item, id: splitId, templateId, quantity: amount },
   };
 }
 
@@ -286,10 +294,14 @@ function canMergeStacks(
 
 function canMergeItems(source: InventoryItem, target: InventoryItem): boolean {
   return (
-    source.id === target.id &&
+    getItemTemplateId(source) === getItemTemplateId(target) &&
     source.maxStack > 1 &&
     target.maxStack > 1
   );
+}
+
+function getItemTemplateId(item: InventoryItem): UUID {
+  return item.templateId ?? item.id;
 }
 
 function canPlaceItemInSlot(

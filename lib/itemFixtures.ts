@@ -40,6 +40,23 @@ const ashwoodBow: InventoryItem = {
   allowedSlots: ["mainHand"],
 };
 
+const ironSword: InventoryItem = {
+  id: "45d06f48-cc3d-48d2-b8bc-c3db83ed4bb2",
+  name: "Iron Sword",
+  description: "A freshly forged blade with a simple leather-wrapped grip.",
+  type: "weapon",
+  rarity: "uncommon",
+  stats: {
+    strength: 2,
+    damageMin: 6,
+    damageMax: 11,
+  },
+  weight: 3.1,
+  maxStack: 1,
+  quantity: 1,
+  allowedSlots: ["mainHand", "offHand"],
+};
+
 const leatherCap: InventoryItem = {
   id: "8b11ca98-5543-4b09-85c4-21fa31d9ac48",
   name: "Reinforced Leather Cap",
@@ -145,6 +162,18 @@ const ironOre: InventoryItem = {
   quantity: 12,
 };
 
+const wood: InventoryItem = {
+  id: "7de86bb0-61ee-4c08-93de-cd3476a53634",
+  name: "Wood",
+  description: "Seasoned hardwood suitable for handles, hafts, and frames.",
+  type: "material",
+  rarity: "common",
+  stats: {},
+  weight: 0.7,
+  maxStack: 20,
+  quantity: 8,
+};
+
 const wolfPelt: InventoryItem = {
   id: "f6130174-3f67-4412-94f5-a8e1a1447e6e",
   name: "Cured Wolf Pelt",
@@ -211,7 +240,14 @@ const starterBackpackItems: Record<number, InventoryItem> = {
   3: ironOre,
   4: wolfPelt,
   5: moonlitThread,
+  6: wood,
 };
+
+export const itemTemplates = {
+  ironOre,
+  ironSword,
+  wood,
+} as const;
 
 export const starterBackpack: readonly BackpackSlot[] = backpackSlotIds.map(
   (id, index) => ({
@@ -273,8 +309,14 @@ const hotbarSlotIds = [
 ] as const;
 
 const starterHotbarItems: Record<number, InventoryItem> = {
-  0: minorHealingPotion,
-  1: emberleafTonic,
+  0: createItemInstance(
+    minorHealingPotion,
+    "9a5d91c5-80d8-4a91-a85d-1a617749555d",
+  ),
+  1: createItemInstance(
+    emberleafTonic,
+    "6a35e865-1a6d-421e-8c50-9882b1235bf1",
+  ),
 };
 
 export const starterHotbar: readonly HotbarSlot[] = hotbarSlotIds.map(
@@ -285,3 +327,11 @@ export const starterHotbar: readonly HotbarSlot[] = hotbarSlotIds.map(
     keybind: String(index + 1),
   }),
 );
+
+function createItemInstance(item: InventoryItem, id: string): InventoryItem {
+  return {
+    ...item,
+    id,
+    templateId: item.templateId ?? item.id,
+  };
+}

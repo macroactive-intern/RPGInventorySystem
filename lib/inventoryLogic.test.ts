@@ -135,6 +135,30 @@ describe("inventoryLogic", () => {
     expect((result.source?.quantity ?? 0) + result.target.quantity).toBe(15);
   });
 
+  it("merges separate stack instances that share an item template", () => {
+    const templateId = "10000000-0000-4000-8000-000000000019";
+    const source = makeItem({
+      id: "10000000-0000-4000-8000-000000000020",
+      templateId,
+      name: "Minor Healing Potion",
+      maxStack: 10,
+      quantity: 4,
+    });
+    const target = makeItem({
+      id: "10000000-0000-4000-8000-000000000021",
+      templateId,
+      name: "Minor Healing Potion",
+      maxStack: 10,
+      quantity: 3,
+    });
+
+    const result = mergeStacks(source, target);
+
+    expect(result.source).toBeNull();
+    expect(result.target.id).toBe(target.id);
+    expect(result.target.quantity).toBe(7);
+  });
+
   it("splits a stack while preserving total quantity", () => {
     const arrows = makeItem({
       id: "10000000-0000-4000-8000-000000000006",
@@ -150,6 +174,34 @@ describe("inventoryLogic", () => {
     expect((result?.split.quantity ?? 0) + (result?.remaining.quantity ?? 0)).toBe(
       arrows.quantity,
     );
+  });
+
+  it("splits a stack into a distinct stack instance", () => {
+    const arrows = makeItem({
+      id: "10000000-0000-4000-8000-000000000022",
+      name: "Broadhead Arrows",
+      maxStack: 20,
+      quantity: 12,
+    });
+    const splitId = "10000000-0000-4000-8000-000000000023";
+
+    const result = splitStack(arrows, 5, splitId);
+
+    expect(result?.remaining.id).toBe(arrows.id);
+    expect(result?.split.id).toBe(splitId);
+    expect(result?.split.templateId).toBe(arrows.id);
+    expect(result?.remaining.templateId).toBe(arrows.id);
+  });
+
+  it("rejects fractional stack splits", () => {
+    const arrows = makeItem({
+      id: "10000000-0000-4000-8000-000000000024",
+      name: "Broadhead Arrows",
+      maxStack: 20,
+      quantity: 12,
+    });
+
+    expect(splitStack(arrows, 2.5)).toBeNull();
   });
 
   it("calculates total backpack and equipment weight", () => {
@@ -393,5 +445,43 @@ describe("inventoryLogic", () => {
     expect(result.moved).toBe(false);
     expect(result.inventory.backpack[0].item?.quantity).toBe(source.quantity);
     expect(result.inventory.backpack[1].item?.quantity).toBe(target.quantity);
+  });
+
+  it("rejects unequipping into a full incompatible backpack slot without loss", () => {
+    const helmet = makeItem({
+      id: "10000000-0000-4000-8000-000000000025",
+      name: "Iron Helm",
+      type: "armor",
+      allowedSlots: ["head"],
+    });
+    const potion = makeItem({
+      id: "10000000-0000-4000-8000-000000000026",
+      name: "Minor Healing Potion",
+      type: "consumable",
+      maxStack: 10,
+      quantity: 2,
+    });
+    const backpackSlot = makeBackpackSlot(
+      "30000000-0000-4000-8000-000000000010",
+      0,
+      potion,
+    );
+    const headSlot = makeEquipmentSlot(
+      "20000000-0000-4000-8000-000000000009",
+      "head",
+      helmet,
+    );
+    const inventory = makeInventory([backpackSlot], [headSlot]);
+
+    const result = moveItemWithResult(
+      inventory,
+      { container: "equipment", slotId: headSlot.id },
+      { container: "backpack", slotId: backpackSlot.id },
+    );
+
+    expect(result.valid).toBe(false);
+    expect(result.moved).toBe(false);
+    expect(result.inventory.equipment[0].item?.id).toBe(helmet.id);
+    expect(result.inventory.backpack[0].item?.id).toBe(potion.id);
   });
 });

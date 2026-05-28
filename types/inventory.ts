@@ -52,6 +52,8 @@ export interface ItemStats {
 /** Core item record stored in inventory, equipment, or hotbar slots. */
 export interface InventoryItem {
   id: UUID;
+  /** Shared item definition id used to merge separate stack instances safely. */
+  templateId?: UUID;
   name: string;
   description?: string;
   type: ItemType;

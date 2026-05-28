@@ -11,6 +11,7 @@ import {
 import {
   DndContext,
   DragOverlay,
+  KeyboardSensor,
   PointerSensor,
   closestCenter,
   useDraggable,
@@ -45,6 +46,7 @@ interface InventoryDndProviderProps {
 export function InventoryDndProvider({ children }: InventoryDndProviderProps) {
   const draggedItem = useInventoryStore((state) => state.draggedItem);
   const clearRejectedSlot = useInventoryStore((state) => state.clearRejectedSlot);
+  const closeContextMenu = useInventoryStore((state) => state.closeContextMenu);
   const moveItem = useInventoryStore((state) => state.moveItem);
   const rejectedSlot = useInventoryStore((state) => state.rejectedSlot);
   const setRejectedSlot = useInventoryStore((state) => state.setRejectedSlot);
@@ -57,6 +59,7 @@ export function InventoryDndProvider({ children }: InventoryDndProviderProps) {
         distance: 6,
       },
     }),
+    useSensor(KeyboardSensor),
   );
 
   useEffect(() => {
@@ -79,6 +82,7 @@ export function InventoryDndProvider({ children }: InventoryDndProviderProps) {
     const dragData = event.active.data.current;
 
     if (isInventoryDragData(dragData)) {
+      closeContextMenu();
       setTooltip(null);
       setDraggedItem({
         item: dragData.item,
@@ -103,6 +107,9 @@ export function InventoryDndProvider({ children }: InventoryDndProviderProps) {
         );
         restartRejectionTimer();
       }
+    } else if (isInventoryDragData(dragData)) {
+      setRejectedSlot(dragData.source, "Item returned to its original slot");
+      restartRejectionTimer();
     }
 
     setDraggedItem(null);

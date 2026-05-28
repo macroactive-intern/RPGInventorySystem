@@ -1,4 +1,6 @@
 import { create } from "zustand";
+import { craftItem as craftInventoryItem } from "@/lib/craftingLogic";
+import { craftingRecipes } from "@/lib/craftingRecipes";
 import {
   starterBackpack,
   starterEquipment,
@@ -7,7 +9,6 @@ import {
 import {
   canEquip,
   findValidEquipmentSlot,
-  moveItem as moveInventoryItem,
   moveItemWithResult,
   splitStack as splitInventoryStack,
   type InventoryCollections,
@@ -21,6 +22,7 @@ import type {
   InventoryItem,
   UUID,
 } from "@/types/inventory";
+import type { CraftingRecipe } from "@/types/crafting";
 
 type InventorySlot = BackpackSlot | EquipmentSlot | HotbarSlot;
 
@@ -61,6 +63,7 @@ export interface ItemInspectionModalState {
 }
 
 export interface InventoryStoreState extends InventoryCollections {
+  craftingRecipes: readonly CraftingRecipe[];
   draggedItem: DraggedItemMetadata | null;
   rejectedSlot: RejectionAnimationState | null;
   contextMenu: ContextMenuState | null;
@@ -70,6 +73,7 @@ export interface InventoryStoreState extends InventoryCollections {
   moveItem: (from: SlotPointer, to: SlotPointer) => boolean;
   equipItem: (from: SlotPointer, preferredSlotId?: UUID) => void;
   unequipItem: (equipmentSlotId: UUID, targetBackpackSlotId?: UUID) => void;
+  craftItem: (recipeId: UUID) => boolean;
   splitStack: (
     source: SlotPointer,
     amount: number,
@@ -99,6 +103,7 @@ const initialInventory = (): InventoryCollections => ({
 
 export const useInventoryStore = create<InventoryStoreState>((set, get) => ({
   ...initialInventory(),
+  craftingRecipes,
   draggedItem: null,
   rejectedSlot: null,
   contextMenu: null,
@@ -109,7 +114,12 @@ export const useInventoryStore = create<InventoryStoreState>((set, get) => ({
     const result = moveItemWithResult(getInventoryCollections(get()), from, to);
 
     if (result.moved) {
-      set({ ...result.inventory });
+      set({
+        ...result.inventory,
+        contextMenu: null,
+        draggedItem: null,
+        tooltip: null,
+      });
     }
 
     return result.valid;
@@ -134,11 +144,19 @@ export const useInventoryStore = create<InventoryStoreState>((set, get) => ({
         return {};
       }
 
+      const result = moveItemWithResult(getInventoryCollections(state), from, {
+        container: "equipment",
+        slotId: targetSlot.id,
+      });
+
+      if (!result.moved) {
+        return {};
+      }
+
       return {
-        ...moveInventoryItem(getInventoryCollections(state), from, {
-          container: "equipment",
-          slotId: targetSlot.id,
-        }),
+        ...result.inventory,
+        contextMenu: null,
+        tooltip: null,
       };
     }),
   unequipItem: (equipmentSlotId, targetBackpackSlotId) =>
@@ -154,14 +172,52 @@ export const useInventoryStore = create<InventoryStoreState>((set, get) => ({
         return {};
       }
 
+      const result = moveItemWithResult(
+        getInventoryCollections(state),
+        { container: "equipment", slotId: equipmentSlot.id },
+        { container: "backpack", slotId: targetBackpackSlot.id },
+      );
+
+      if (!result.moved) {
+        return {};
+      }
+
       return {
-        ...moveInventoryItem(
-          getInventoryCollections(state),
-          { container: "equipment", slotId: equipmentSlot.id },
-          { container: "backpack", slotId: targetBackpackSlot.id },
-        ),
+        ...result.inventory,
+        contextMenu: null,
+        tooltip: null,
       };
     }),
+  craftItem: (recipeId) => {
+    const state = get();
+    const recipe = state.craftingRecipes.find(
+      (candidate) => candidate.id === recipeId,
+    );
+
+    if (!recipe) {
+      return false;
+    }
+
+    const result = craftInventoryItem(
+      getInventoryCollections(state),
+      recipe,
+      createRuntimeUuid(),
+    );
+
+    if (!result.crafted) {
+      return false;
+    }
+
+    set({
+      ...result.inventory,
+      contextMenu: null,
+      itemInspectionModal: null,
+      splitStackModal: null,
+      tooltip: null,
+    });
+
+    return true;
+  },
   splitStack: (source, amount, target) => {
     const state = get();
     const sourceSlot = findSlot(state, source);
@@ -177,7 +233,11 @@ export const useInventoryStore = create<InventoryStoreState>((set, get) => ({
       return false;
     }
 
-    const splitResult = splitInventoryStack(sourceSlot.item, amount);
+    const splitResult = splitInventoryStack(
+      sourceSlot.item,
+      amount,
+      createRuntimeUuid(),
+    );
 
     if (!splitResult) {
       return false;
@@ -193,6 +253,9 @@ export const useInventoryStore = create<InventoryStoreState>((set, get) => ({
         { slot: source, item: splitResult.remaining },
         { slot: targetSlotPointer, item: splitResult.split },
       ]),
+      contextMenu: null,
+      splitStackModal: null,
+      tooltip: null,
     });
 
     return true;
@@ -200,6 +263,10 @@ export const useInventoryStore = create<InventoryStoreState>((set, get) => ({
   removeItem: (slot) =>
     set((state) => ({
       ...updateSlots(state, [{ slot, item: null }]),
+      contextMenu: null,
+      itemInspectionModal: null,
+      splitStackModal: null,
+      tooltip: null,
     })),
   openContextMenu: (slot, position) =>
     set((state) => {
@@ -216,6 +283,7 @@ export const useInventoryStore = create<InventoryStoreState>((set, get) => ({
           x: position.x,
           y: position.y,
         },
+        tooltip: null,
       };
     }),
   closeContextMenu: () => set({ contextMenu: null }),
@@ -232,6 +300,7 @@ export const useInventoryStore = create<InventoryStoreState>((set, get) => ({
           item: targetSlot.item,
           slot,
         },
+        tooltip: null,
       };
     }),
   closeItemInspectionModal: () => set({ itemInspectionModal: null }),
@@ -248,6 +317,7 @@ export const useInventoryStore = create<InventoryStoreState>((set, get) => ({
           item: targetSlot.item,
           slot,
         },
+        tooltip: null,
       };
     }),
   closeSplitStackModal: () => set({ splitStackModal: null }),
@@ -259,7 +329,16 @@ export const useInventoryStore = create<InventoryStoreState>((set, get) => ({
       },
     }),
   clearRejectedSlot: () => set({ rejectedSlot: null }),
-  setDraggedItem: (metadata) => set({ draggedItem: metadata }),
+  setDraggedItem: (metadata) =>
+    set(
+      metadata
+        ? {
+            contextMenu: null,
+            draggedItem: metadata,
+            tooltip: null,
+          }
+        : { draggedItem: null },
+    ),
   setTooltip: (tooltip) => set({ tooltip }),
 }));
 
@@ -289,6 +368,19 @@ function findSlot(
 
 function isEquipmentSlot(slot: InventorySlot): slot is EquipmentSlot {
   return "type" in slot;
+}
+
+function createRuntimeUuid(): UUID {
+  if (globalThis.crypto?.randomUUID) {
+    return globalThis.crypto.randomUUID();
+  }
+
+  const randomTail = Math.floor(Math.random() * 0xffffffffffff)
+    .toString(16)
+    .padStart(12, "0")
+    .slice(0, 12);
+
+  return `10000000-0000-4000-8000-${randomTail}`;
 }
 
 function updateSlots(

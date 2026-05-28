@@ -73,12 +73,18 @@ function ItemInspectionDialog({
   }, []);
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-    if (event.key !== "Escape") {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeItemInspectionModal();
+      return;
+    }
+
+    if (event.key !== "Tab") {
       return;
     }
 
     event.preventDefault();
-    closeItemInspectionModal();
+    closeButtonRef.current?.focus();
   }
 
   return (
