@@ -171,38 +171,55 @@ const moonlitThread: InventoryItem = {
   quantity: 9,
 };
 
-export const starterBackpack: readonly BackpackSlot[] = [
-  {
-    id: "1c1fd0ff-f559-4b97-9f17-0d1382e9e04d",
-    index: 0,
-    item: ashwoodBow,
-  },
-  {
-    id: "ade15cd7-b015-4a0e-9fcb-ef605f07d367",
-    index: 1,
-    item: minorHealingPotion,
-  },
-  {
-    id: "b41c79c7-cd5b-41e3-89a0-a2f6fa7ac772",
-    index: 2,
-    item: emberleafTonic,
-  },
-  {
-    id: "ff92d842-580a-4d97-8656-a2b2a2231214",
-    index: 3,
-    item: ironOre,
-  },
-  {
-    id: "9ec4e240-b420-4b0f-9ee8-c58d6ac0b906",
-    index: 4,
-    item: wolfPelt,
-  },
-  {
-    id: "e4aee662-3979-4813-9d55-d41b6690e6ca",
-    index: 5,
-    item: moonlitThread,
-  },
-];
+const backpackSlotIds = [
+  "1c1fd0ff-f559-4b97-9f17-0d1382e9e04d",
+  "ade15cd7-b015-4a0e-9fcb-ef605f07d367",
+  "b41c79c7-cd5b-41e3-89a0-a2f6fa7ac772",
+  "ff92d842-580a-4d97-8656-a2b2a2231214",
+  "9ec4e240-b420-4b0f-9ee8-c58d6ac0b906",
+  "e4aee662-3979-4813-9d55-d41b6690e6ca",
+  "f3ec1167-bca7-4aa7-b579-5a93023cae49",
+  "7f496f16-4676-46b3-9187-d5c42d98cd5d",
+  "2e46d923-ced5-4941-81d4-6771110c2374",
+  "437ef128-4aa9-4707-a66c-6cd034156736",
+  "6217f3c3-88ea-457f-94c8-89405d36c742",
+  "b4a7930a-f1de-4caf-9254-357a87851a51",
+  "d00fbf24-e572-430c-8eb7-2d42d3e999b6",
+  "7e9e8378-46ac-4af3-bf1d-0d08f28b0ea1",
+  "01eb0461-b9db-4a9a-a97b-2b00b0b5c62a",
+  "d40a94dc-ddd1-48d7-88ef-94d4ce1937d8",
+  "88fe3efc-c98e-40f4-9796-7ddab05a5c3f",
+  "4937dbf4-0c1e-4406-b6df-3ad5414705a6",
+  "aa0920c5-3bc3-4b86-8bec-4505a896af43",
+  "760bb847-ecb4-4ec6-895e-942c27d94610",
+  "c3efe276-b0c3-454b-ae96-17b55349fc59",
+  "66ee613d-aacc-4966-ae25-c072a6631d58",
+  "6e74e21a-9a58-4374-8356-a34bc8186095",
+  "8a1796b5-2eff-4755-a1dc-3c7189c0846f",
+  "cb81e30e-391f-4b7c-86cd-3481991a9254",
+  "74dffae4-76fa-44f3-bae6-bf5a7bb86c32",
+  "ca2fe1e9-99a3-4dfa-a0c3-6971d7303c34",
+  "ce27a89c-54e6-4311-987c-d53fb82fba97",
+  "0ecf4280-21e5-4b49-b3d0-d3fa9ad47cf3",
+  "bd04f9ee-85f7-4515-beba-e1142a5e11c7",
+] as const;
+
+const starterBackpackItems: Record<number, InventoryItem> = {
+  0: ashwoodBow,
+  1: minorHealingPotion,
+  2: emberleafTonic,
+  3: ironOre,
+  4: wolfPelt,
+  5: moonlitThread,
+};
+
+export const starterBackpack: readonly BackpackSlot[] = backpackSlotIds.map(
+  (id, index) => ({
+    id,
+    index,
+    item: starterBackpackItems[index] ?? null,
+  }),
+);
 
 export const starterEquipment: readonly EquipmentSlot[] = [
   {
@@ -247,17 +264,24 @@ export const starterEquipment: readonly EquipmentSlot[] = [
   },
 ];
 
-export const starterHotbar: readonly HotbarSlot[] = [
-  {
-    id: "02e2b298-9a9d-4ec9-8ff1-6c45ae9b29d8",
-    index: 0,
-    item: minorHealingPotion,
-    keybind: "1",
-  },
-  {
-    id: "eb670f2e-c7e2-4bfa-9cd0-451d4dd79c94",
-    index: 1,
-    item: emberleafTonic,
-    keybind: "2",
-  },
-];
+const hotbarSlotIds = [
+  "02e2b298-9a9d-4ec9-8ff1-6c45ae9b29d8",
+  "eb670f2e-c7e2-4bfa-9cd0-451d4dd79c94",
+  "bbab1eef-8fd6-43d1-8bc7-01eadc446839",
+  "ec0e66a3-e109-44cd-ae70-3805179f8799",
+  "97cd19d2-7758-4e19-bd99-d534e9ece0f0",
+] as const;
+
+const starterHotbarItems: Record<number, InventoryItem> = {
+  0: minorHealingPotion,
+  1: emberleafTonic,
+};
+
+export const starterHotbar: readonly HotbarSlot[] = hotbarSlotIds.map(
+  (id, index) => ({
+    id,
+    index,
+    item: starterHotbarItems[index] ?? null,
+    keybind: String(index + 1),
+  }),
+);

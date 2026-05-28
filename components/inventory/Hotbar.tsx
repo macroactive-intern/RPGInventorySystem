@@ -2,6 +2,10 @@
 
 import { useInventoryStore } from "@/store/inventoryStore";
 import type { InventoryItem } from "@/types/inventory";
+import {
+  DraggableInventoryItem,
+  InventoryDroppableSlot,
+} from "@/components/inventory/InventoryDnd";
 
 const HOTBAR_SLOT_COUNT = 5;
 
@@ -46,6 +50,7 @@ export function Hotbar() {
             index={index}
             item={slot?.item ?? null}
             key={slot?.id ?? `empty-hotbar-slot-${index}`}
+            slotId={slot?.id}
           />
         ))}
       </div>
@@ -56,30 +61,40 @@ export function Hotbar() {
 interface HotbarSlotCellProps {
   index: number;
   item: InventoryItem | null;
+  slotId?: string;
 }
 
-function HotbarSlotCell({ index, item }: HotbarSlotCellProps) {
+function HotbarSlotCell({ index, item, slotId }: HotbarSlotCellProps) {
   const slotNumber = index + 1;
   const borderClass = item
     ? rarityBorderClasses[item.rarity]
     : "border-dashed border-slate-700";
+  const slot = {
+    container: "hotbar" as const,
+    slotId: slotId ?? `missing-hotbar-slot-${index}`,
+  };
 
   return (
-    <div
-      aria-label={
+    <InventoryDroppableSlot
+      className={`relative aspect-square min-h-20 rounded-md border bg-slate-950 p-2 shadow-md shadow-black/20 transition-shadow ${borderClass}`}
+      label={
         item
           ? `Hotbar slot ${slotNumber}: ${item.name}, quantity ${item.quantity}`
           : `Hotbar slot ${slotNumber}: empty consumable slot`
       }
-      className={`relative aspect-square min-h-20 rounded-md border bg-slate-950 p-2 shadow-md shadow-black/20 ${borderClass}`}
       role="listitem"
+      slot={slot}
     >
       <div className="absolute left-2 top-1.5 flex h-5 w-5 items-center justify-center rounded bg-slate-800 text-xs font-bold text-slate-300">
         {slotNumber}
       </div>
 
       {item ? (
-        <div className="flex h-full flex-col justify-between pt-5">
+        <DraggableInventoryItem
+          className="flex h-full cursor-grab touch-none flex-col justify-between pt-5 active:cursor-grabbing"
+          item={item}
+          source={slot}
+        >
           <div className="flex min-h-0 flex-1 items-center justify-center rounded bg-slate-900 text-base font-bold text-slate-100 sm:text-lg">
             {getIconPlaceholder(item)}
           </div>
@@ -91,13 +106,13 @@ function HotbarSlotCell({ index, item }: HotbarSlotCellProps) {
               </span>
             ) : null}
           </div>
-        </div>
+        </DraggableInventoryItem>
       ) : (
         <div className="flex h-full items-end justify-center rounded bg-slate-900/60 pb-2 text-xs text-slate-600">
           Consumable
         </div>
       )}
-    </div>
+    </InventoryDroppableSlot>
   );
 }
 

@@ -2,6 +2,10 @@
 
 import type { InventoryItem } from "@/types/inventory";
 import { useInventoryStore } from "@/store/inventoryStore";
+import {
+  DraggableInventoryItem,
+  InventoryDroppableSlot,
+} from "@/components/inventory/InventoryDnd";
 
 const SLOT_COUNT = 30;
 
@@ -58,6 +62,7 @@ export function BackpackGrid() {
             index={index}
             item={slot?.item ?? null}
             key={slot?.id ?? `empty-backpack-slot-${index}`}
+            slotId={slot?.id}
           />
         ))}
       </div>
@@ -68,26 +73,36 @@ export function BackpackGrid() {
 interface InventorySlotCellProps {
   index: number;
   item: InventoryItem | null;
+  slotId?: string;
 }
 
-function InventorySlotCell({ index, item }: InventorySlotCellProps) {
+function InventorySlotCell({ index, item, slotId }: InventorySlotCellProps) {
   const rarityBorder = item
     ? rarityBorderClasses[item.rarity]
     : "border-slate-700";
   const rarityGlow = item ? rarityGlowClasses[item.rarity] : "shadow-black/20";
+  const slot = {
+    container: "backpack" as const,
+    slotId: slotId ?? `missing-backpack-slot-${index}`,
+  };
 
   return (
-    <div
-      aria-label={
+    <InventoryDroppableSlot
+      className={`relative aspect-square rounded-md border bg-slate-900/90 p-1.5 shadow-md transition-shadow ${rarityBorder} ${rarityGlow}`}
+      label={
         item
           ? `Backpack slot ${index + 1}: ${item.name}, quantity ${item.quantity}`
           : `Backpack slot ${index + 1}: empty`
       }
-      className={`relative aspect-square rounded-md border bg-slate-900/90 p-1.5 shadow-md ${rarityBorder} ${rarityGlow}`}
       role="listitem"
+      slot={slot}
     >
       {item ? (
-        <div className="flex h-full flex-col justify-between rounded bg-slate-800 p-1.5">
+        <DraggableInventoryItem
+          className="flex h-full cursor-grab touch-none flex-col justify-between rounded bg-slate-800 p-1.5 active:cursor-grabbing"
+          item={item}
+          source={slot}
+        >
           <div className="flex min-h-0 flex-1 items-center justify-center rounded bg-slate-950 text-base font-bold text-slate-200 sm:text-lg">
             {getIconPlaceholder(item)}
           </div>
@@ -99,13 +114,13 @@ function InventorySlotCell({ index, item }: InventorySlotCellProps) {
               </span>
             ) : null}
           </div>
-        </div>
+        </DraggableInventoryItem>
       ) : (
         <div className="flex h-full items-center justify-center rounded bg-slate-950/60 text-xs text-slate-700">
           {index + 1}
         </div>
       )}
-    </div>
+    </InventoryDroppableSlot>
   );
 }
 

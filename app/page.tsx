@@ -1,6 +1,7 @@
 import { BackpackGrid } from "@/components/inventory/BackpackGrid";
 import { EquipmentPanel } from "@/components/inventory/EquipmentPanel";
 import { Hotbar } from "@/components/inventory/Hotbar";
+import { InventoryDndProvider } from "@/components/inventory/InventoryDnd";
 
 export default function Home() {
   return (
@@ -24,11 +25,13 @@ export default function Home() {
             ))}
           </div>
         </section>
-        <div className="grid gap-6 lg:grid-cols-[minmax(320px,420px)_1fr]">
-          <EquipmentPanel />
-          <BackpackGrid />
-        </div>
-        <Hotbar />
+        <InventoryDndProvider>
+          <div className="grid gap-6 lg:grid-cols-[minmax(320px,420px)_1fr]">
+            <EquipmentPanel />
+            <BackpackGrid />
+          </div>
+          <Hotbar />
+        </InventoryDndProvider>
       </div>
     </main>
   );

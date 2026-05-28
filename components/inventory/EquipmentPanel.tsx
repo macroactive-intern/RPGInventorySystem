@@ -2,6 +2,10 @@
 
 import type { EquipmentSlot, InventoryItem, SlotType } from "@/types/inventory";
 import { useInventoryStore } from "@/store/inventoryStore";
+import {
+  DraggableInventoryItem,
+  InventoryDroppableSlot,
+} from "@/components/inventory/InventoryDnd";
 
 const rarityBorderClasses: Record<InventoryItem["rarity"], string> = {
   common: "border-slate-500",
@@ -116,15 +120,20 @@ function EquipmentSlotCard({ definition, slot }: EquipmentSlotCardProps) {
   const borderClass = item
     ? rarityBorderClasses[item.rarity]
     : "border-dashed border-slate-700";
+  const slotPointer = {
+    container: "equipment" as const,
+    slotId: slot?.id ?? `missing-equipment-slot-${definition.label}`,
+  };
 
   return (
-    <div
-      aria-label={
+    <InventoryDroppableSlot
+      className={`relative z-10 min-h-28 rounded-md border bg-slate-950/90 p-3 transition-shadow ${borderClass} ${definition.className}`}
+      label={
         item
           ? `${definition.label}: ${item.name}`
           : `${definition.label}: empty ${definition.accepted} slot`
       }
-      className={`relative z-10 min-h-28 rounded-md border bg-slate-950/90 p-3 ${borderClass} ${definition.className}`}
+      slot={slotPointer}
     >
       <div className="flex h-full flex-col justify-between gap-3">
         <div>
@@ -137,7 +146,11 @@ function EquipmentSlotCard({ definition, slot }: EquipmentSlotCardProps) {
         </div>
 
         {item ? (
-          <div>
+          <DraggableInventoryItem
+            className="cursor-grab touch-none active:cursor-grabbing"
+            item={item}
+            source={slotPointer}
+          >
             <div className="mb-2 flex h-10 w-10 items-center justify-center rounded bg-slate-800 text-sm font-bold text-slate-100">
               {getIconPlaceholder(item)}
             </div>
@@ -147,14 +160,14 @@ function EquipmentSlotCard({ definition, slot }: EquipmentSlotCardProps) {
             <div className="mt-1 text-xs capitalize text-slate-400">
               {item.rarity}
             </div>
-          </div>
+          </DraggableInventoryItem>
         ) : (
           <div className="rounded bg-slate-900/80 px-3 py-2 text-sm text-slate-500">
             Empty
           </div>
         )}
       </div>
-    </div>
+    </InventoryDroppableSlot>
   );
 }
 
