@@ -183,7 +183,7 @@ export function moveItemWithResult(
     };
   }
 
-  if (!canPlaceItemInSlot(sourceSlot.item, targetSlot)) {
+  if (!canPlaceItemInSlot(sourceSlot.item, targetSlot, to.container)) {
     return {
       inventory,
       moved: false,
@@ -215,7 +215,7 @@ export function moveItemWithResult(
       };
     }
 
-    if (!canPlaceItemInSlot(targetSlot.item, sourceSlot)) {
+    if (!canPlaceItemInSlot(targetSlot.item, sourceSlot, from.container)) {
       const displacedBackpackSlot = findEmptyBackpackSlotForUnequip(
         inventory,
         from,
@@ -283,8 +283,8 @@ export function swapItems(
   }
 
   if (
-    !canPlaceItemInSlot(firstSlot.item, secondSlot) ||
-    !canPlaceItemInSlot(secondSlot.item, firstSlot)
+    !canPlaceItemInSlot(firstSlot.item, secondSlot, second.container) ||
+    !canPlaceItemInSlot(secondSlot.item, firstSlot, first.container)
   ) {
     return inventory;
   }
@@ -324,12 +324,21 @@ function canMergeItems(source: InventoryItem, target: InventoryItem): boolean {
 function canPlaceItemInSlot(
   item: InventoryItem | null,
   slot: AnyInventorySlot,
+  container: InventoryContainer,
 ): boolean {
   if (!item) {
     return true;
   }
 
-  return isEquipmentSlot(slot) ? canEquip(item, slot) : true;
+  if (isEquipmentSlot(slot)) {
+    return canEquip(item, slot);
+  }
+
+  if (container === "hotbar") {
+    return item.type === "consumable";
+  }
+
+  return true;
 }
 
 function findSlot(

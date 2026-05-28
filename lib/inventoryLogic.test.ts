@@ -50,6 +50,17 @@ const makeEquipmentSlot = (
   item,
 });
 
+const makeHotbarSlot = (
+  id: string,
+  index: number,
+  item: InventoryItem | null,
+): HotbarSlot => ({
+  id,
+  index,
+  item,
+  keybind: String(index + 1),
+});
+
 const makeInventory = (
   backpack: readonly BackpackSlot[],
   equipment: readonly EquipmentSlot[],
@@ -92,6 +103,70 @@ describe("inventoryLogic", () => {
     );
 
     expect(canEquip(potion, headSlot)).toBe(false);
+  });
+
+  it("allows consumables to move into hotbar slots", () => {
+    const potion = makeItem({
+      id: "10000000-0000-4000-8000-000000000029",
+      name: "Minor Healing Potion",
+      type: "consumable",
+      maxStack: 10,
+      quantity: 2,
+    });
+    const backpackSlot = makeBackpackSlot(
+      "30000000-0000-4000-8000-000000000013",
+      0,
+      potion,
+    );
+    const hotbarSlot = makeHotbarSlot(
+      "40000000-0000-4000-8000-000000000001",
+      0,
+      null,
+    );
+    const inventory = makeInventory([backpackSlot], [], [hotbarSlot]);
+
+    const result = moveItemWithResult(
+      inventory,
+      { container: "backpack", slotId: backpackSlot.id },
+      { container: "hotbar", slotId: hotbarSlot.id },
+    );
+
+    expect(result.valid).toBe(true);
+    expect(result.moved).toBe(true);
+    expect(result.inventory.backpack[0].item).toBeNull();
+    expect(result.inventory.hotbar[0].item?.id).toBe(potion.id);
+  });
+
+  it("rejects non-consumable items moving into hotbar slots", () => {
+    const sword = makeItem({
+      id: "10000000-0000-4000-8000-000000000030",
+      name: "Iron Sword",
+      type: "weapon",
+      allowedSlots: ["mainHand"],
+    });
+    const backpackSlot = makeBackpackSlot(
+      "30000000-0000-4000-8000-000000000014",
+      0,
+      sword,
+    );
+    const hotbarSlot = makeHotbarSlot(
+      "40000000-0000-4000-8000-000000000002",
+      0,
+      null,
+    );
+    const inventory = makeInventory([backpackSlot], [], [hotbarSlot]);
+
+    const result = moveItemWithResult(
+      inventory,
+      { container: "backpack", slotId: backpackSlot.id },
+      { container: "hotbar", slotId: hotbarSlot.id },
+    );
+
+    expect(result.valid).toBe(false);
+    expect(result.moved).toBe(false);
+    expect(result.reason).toBe("invalid-target");
+    expect(result.inventory.backpack[0].item?.id).toBe(sword.id);
+    expect(result.inventory.hotbar[0].item).toBeNull();
   });
 
   it("merges compatible stacks successfully", () => {
