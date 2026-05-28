@@ -216,6 +216,26 @@ export function moveItemWithResult(
     }
 
     if (!canPlaceItemInSlot(targetSlot.item, sourceSlot)) {
+      const displacedBackpackSlot = findEmptyBackpackSlotForUnequip(
+        inventory,
+        from,
+        to,
+      );
+
+      if (displacedBackpackSlot) {
+        // Unequipping onto an occupied backpack slot should not require the
+        // backpack item to be valid equipment; move it aside when space exists.
+        return {
+          inventory: updateSlots(inventory, [
+            { reference: from, item: null },
+            { reference: to, item: sourceSlot.item },
+            { reference: displacedBackpackSlot, item: targetSlot.item },
+          ]),
+          moved: true,
+          valid: true,
+        };
+      }
+
       return {
         inventory,
         moved: false,
@@ -317,6 +337,25 @@ function findSlot(
   reference: SlotReference,
 ): AnyInventorySlot | undefined {
   return inventory[reference.container].find((slot) => slot.id === reference.slotId);
+}
+
+function findEmptyBackpackSlotForUnequip(
+  inventory: InventoryCollections,
+  from: SlotReference,
+  to: SlotReference,
+): SlotReference | null {
+  if (from.container !== "equipment" || to.container !== "backpack") {
+    return null;
+  }
+
+  const emptySlot = inventory.backpack.find((slot) => slot.item === null);
+
+  return emptySlot
+    ? {
+        container: "backpack",
+        slotId: emptySlot.id,
+      }
+    : null;
 }
 
 function getItemStackWeight(item: InventoryItem | null): number {

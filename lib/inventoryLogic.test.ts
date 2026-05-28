@@ -410,6 +410,55 @@ describe("inventoryLogic", () => {
     expect(result.inventory.backpack[0].item?.id).toBe(helmet.id);
   });
 
+  it("unequips onto an occupied backpack slot by moving that item to empty space", () => {
+    const helmet = makeItem({
+      id: "10000000-0000-4000-8000-000000000027",
+      name: "Iron Helm",
+      type: "armor",
+      allowedSlots: ["head"],
+    });
+    const potion = makeItem({
+      id: "10000000-0000-4000-8000-000000000028",
+      name: "Minor Healing Potion",
+      type: "consumable",
+      maxStack: 10,
+      quantity: 2,
+    });
+    const occupiedBackpackSlot = makeBackpackSlot(
+      "30000000-0000-4000-8000-000000000011",
+      0,
+      potion,
+    );
+    const emptyBackpackSlot = makeBackpackSlot(
+      "30000000-0000-4000-8000-000000000012",
+      1,
+      null,
+    );
+    const headSlot = makeEquipmentSlot(
+      "20000000-0000-4000-8000-000000000010",
+      "head",
+      helmet,
+    );
+    const inventory = makeInventory(
+      [occupiedBackpackSlot, emptyBackpackSlot],
+      [headSlot],
+    );
+
+    const result = moveItemWithResult(
+      inventory,
+      { container: "equipment", slotId: headSlot.id },
+      { container: "backpack", slotId: occupiedBackpackSlot.id },
+    );
+
+    expect(result.valid).toBe(true);
+    expect(result.moved).toBe(true);
+    expect(result.inventory.equipment[0].item).toBeNull();
+    expect(result.inventory.backpack[0].item?.id).toBe(helmet.id);
+    expect(result.inventory.backpack[1].item?.id).toBe(potion.id);
+    expect(inventory.equipment[0].item?.id).toBe(helmet.id);
+    expect(inventory.backpack[0].item?.id).toBe(potion.id);
+  });
+
   it("rejects full stack merges without changing quantities", () => {
     const source = makeItem({
       id: "10000000-0000-4000-8000-000000000018",
