@@ -14,6 +14,7 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
+import { DragOverlayItem } from "@/components/inventory/DragOverlayItem";
 import { useInventoryStore, type SlotPointer } from "@/store/inventoryStore";
 import type { InventoryItem } from "@/types/inventory";
 
@@ -111,7 +112,7 @@ export function InventoryDndProvider({ children }: InventoryDndProviderProps) {
         {rejectedSlot?.reason ?? ""}
       </div>
       <DragOverlay>
-        {draggedItem ? <DragItemPreview item={draggedItem.item} /> : null}
+        {draggedItem ? <DragOverlayItem item={draggedItem.item} /> : null}
       </DragOverlay>
     </DndContext>
   );
@@ -194,24 +195,6 @@ export function DraggableInventoryItem({
   );
 }
 
-function DragItemPreview({ item }: { item: InventoryItem }) {
-  return (
-    <div className="min-w-32 rounded-md border border-emerald-300 bg-slate-900 p-3 shadow-2xl shadow-black/40">
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded bg-slate-950 text-sm font-bold text-slate-100">
-          {getIconPlaceholder(item)}
-        </div>
-        <div className="min-w-0">
-          <div className="truncate text-sm font-semibold text-white">
-            {item.name}
-          </div>
-          <div className="text-xs capitalize text-slate-400">{item.rarity}</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function isInventoryDragData(value: unknown): value is InventoryDragData {
   return (
     typeof value === "object" &&
@@ -254,12 +237,3 @@ function getItemDndId(slot: SlotPointer): string {
   return `${getSlotDndId(slot)}:item`;
 }
 
-function getIconPlaceholder(item: InventoryItem): string {
-  return item.name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase();
-}
