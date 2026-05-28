@@ -2,6 +2,7 @@ import { BackpackGrid } from "@/components/inventory/BackpackGrid";
 import { EquipmentPanel } from "@/components/inventory/EquipmentPanel";
 import { Hotbar } from "@/components/inventory/Hotbar";
 import { InventoryDndProvider } from "@/components/inventory/InventoryDnd";
+import { WeightPanel } from "@/components/inventory/WeightPanel";
 
 export default function Home() {
   return (
@@ -27,7 +28,10 @@ export default function Home() {
         </section>
         <InventoryDndProvider>
           <div className="grid gap-6 lg:grid-cols-[minmax(320px,420px)_1fr]">
-            <EquipmentPanel />
+            <div className="flex flex-col gap-6">
+              <EquipmentPanel />
+              <WeightPanel />
+            </div>
             <BackpackGrid />
           </div>
           <Hotbar />
