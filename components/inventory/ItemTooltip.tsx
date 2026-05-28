@@ -1,10 +1,15 @@
 "use client";
 
+import { useLayoutEffect } from "react";
 import { canEquip } from "@/lib/inventoryLogic";
 import {
   rarityBorderClasses,
   rarityTextClasses,
 } from "@/lib/inventoryDisplay";
+import {
+  getTooltipTransform,
+  useTooltipPosition,
+} from "@/components/inventory/TooltipPositionProvider";
 import { useInventoryStore } from "@/store/inventoryStore";
 import type { InventoryItem, ItemStats } from "@/types/inventory";
 
@@ -30,6 +35,15 @@ const percentageStats = new Set<keyof ItemStats>([
 export function ItemTooltip() {
   const equipment = useInventoryStore((state) => state.equipment);
   const tooltip = useInventoryStore((state) => state.tooltip);
+  const { positionRef, tooltipElementRef } = useTooltipPosition();
+
+  useLayoutEffect(() => {
+    if (tooltipElementRef.current) {
+      tooltipElementRef.current.style.transform = getTooltipTransform(
+        positionRef.current,
+      );
+    }
+  }, [positionRef, tooltip, tooltipElementRef]);
 
   if (!tooltip) {
     return null;
@@ -42,11 +56,9 @@ export function ItemTooltip() {
 
   return (
     <div
-      className={`pointer-events-none fixed z-50 w-72 rounded-md border bg-slate-950/95 p-4 text-sm shadow-2xl shadow-black/50 ${rarityBorderClasses[tooltip.item.rarity]}`}
-      style={{
-        left: tooltip.x + 16,
-        top: tooltip.y + 16,
-      }}
+      className={`pointer-events-none fixed left-0 top-0 z-50 w-72 rounded-md border bg-slate-950/95 p-4 text-sm shadow-2xl shadow-black/50 will-change-transform ${rarityBorderClasses[tooltip.item.rarity]}`}
+      ref={tooltipElementRef}
+      style={{ transform: "translate3d(-9999px, -9999px, 0)" }}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">

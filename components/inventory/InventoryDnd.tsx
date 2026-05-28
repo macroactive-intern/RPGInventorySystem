@@ -27,6 +27,10 @@ import { DragOverlayItem } from "@/components/inventory/DragOverlayItem";
 import { ItemInspectionModal } from "@/components/inventory/ItemInspectionModal";
 import { ItemTooltip } from "@/components/inventory/ItemTooltip";
 import { SplitStackModal } from "@/components/inventory/SplitStackModal";
+import {
+  TooltipPositionProvider,
+  useTooltipPosition,
+} from "@/components/inventory/TooltipPositionProvider";
 import { isSameSlot } from "@/lib/inventoryLogic";
 import { useInventoryStore, type SlotPointer } from "@/store/inventoryStore";
 import type { InventoryItem } from "@/types/inventory";
@@ -123,25 +127,27 @@ export function InventoryDndProvider({ children }: InventoryDndProviderProps) {
   }
 
   return (
-    <DndContext
-      collisionDetection={closestCenter}
-      onDragCancel={handleDragCancel}
-      onDragEnd={handleDragEnd}
-      onDragStart={handleDragStart}
-      sensors={sensors}
-    >
-      {children}
-      <div aria-live="polite" className="sr-only">
-        {rejectedSlot?.reason ?? ""}
-      </div>
-      <DragOverlay>
-        {draggedItem ? <DragOverlayItem item={draggedItem.item} /> : null}
-      </DragOverlay>
-      <ContextMenu />
-      <ItemInspectionModal />
-      <SplitStackModal />
-      <ItemTooltip />
-    </DndContext>
+    <TooltipPositionProvider>
+      <DndContext
+        collisionDetection={closestCenter}
+        onDragCancel={handleDragCancel}
+        onDragEnd={handleDragEnd}
+        onDragStart={handleDragStart}
+        sensors={sensors}
+      >
+        {children}
+        <div aria-live="polite" className="sr-only">
+          {rejectedSlot?.reason ?? ""}
+        </div>
+        <DragOverlay>
+          {draggedItem ? <DragOverlayItem item={draggedItem.item} /> : null}
+        </DragOverlay>
+        <ContextMenu />
+        <ItemInspectionModal />
+        <SplitStackModal />
+        <ItemTooltip />
+      </DndContext>
+    </TooltipPositionProvider>
   );
 }
 
@@ -199,6 +205,7 @@ export function DraggableInventoryItem({
 }: DraggableInventoryItemProps) {
   const openContextMenu = useInventoryStore((state) => state.openContextMenu);
   const setTooltip = useInventoryStore((state) => state.setTooltip);
+  const { updateTooltipPosition } = useTooltipPosition();
   const { attributes, isDragging, listeners, setNodeRef, transform } =
     useDraggable({
       id: getItemDndId(source),
@@ -211,9 +218,17 @@ export function DraggableInventoryItem({
     transform: CSS.Translate.toString(transform),
   };
   const showTooltip = (event: PointerEvent<HTMLDivElement>) => {
+    updateTooltipPosition({
+      x: event.clientX,
+      y: event.clientY,
+    });
     setTooltip({
       item,
       slot: source,
+    });
+  };
+  const moveTooltip = (event: PointerEvent<HTMLDivElement>) => {
+    updateTooltipPosition({
       x: event.clientX,
       y: event.clientY,
     });
@@ -234,7 +249,7 @@ export function DraggableInventoryItem({
       onContextMenu={handleContextMenu}
       onPointerEnter={showTooltip}
       onPointerLeave={() => setTooltip(null)}
-      onPointerMove={showTooltip}
+      onPointerMove={moveTooltip}
       ref={setNodeRef}
       style={style}
       {...listeners}

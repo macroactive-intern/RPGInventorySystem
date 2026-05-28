@@ -48,8 +48,6 @@ export interface ContextMenuState {
 export interface TooltipState {
   item: InventoryItem;
   slot?: SlotPointer;
-  x: number;
-  y: number;
 }
 
 export interface SplitStackModalState {
