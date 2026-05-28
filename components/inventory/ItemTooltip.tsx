@@ -41,6 +41,7 @@ export function ItemTooltip() {
     if (tooltipElementRef.current) {
       tooltipElementRef.current.style.transform = getTooltipTransform(
         positionRef.current,
+        tooltipElementRef.current.getBoundingClientRect(),
       );
     }
   }, [positionRef, tooltip, tooltipElementRef]);

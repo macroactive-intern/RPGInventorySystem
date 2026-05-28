@@ -9,6 +9,7 @@ import {
   type MutableRefObject,
   type ReactNode,
 } from "react";
+import { getPointerFloatingPosition } from "@/lib/floatingPosition";
 
 interface TooltipPosition {
   x: number;
@@ -37,7 +38,10 @@ export function TooltipPositionProvider({
     positionRef.current = position;
 
     if (tooltipElementRef.current) {
-      tooltipElementRef.current.style.transform = getTooltipTransform(position);
+      tooltipElementRef.current.style.transform = getTooltipTransform(
+        position,
+        tooltipElementRef.current.getBoundingClientRect(),
+      );
     }
   }, []);
   const contextValue = useMemo(
@@ -66,6 +70,16 @@ export function useTooltipPosition() {
   return contextValue;
 }
 
-export function getTooltipTransform(position: TooltipPosition): string {
-  return `translate3d(${position.x + 16}px, ${position.y + 16}px, 0)`;
+export function getTooltipTransform(
+  position: TooltipPosition,
+  tooltipRect: DOMRect | null,
+): string {
+  const nextPosition = tooltipRect
+    ? getPointerFloatingPosition(position, {
+        height: tooltipRect.height,
+        width: tooltipRect.width,
+      })
+    : position;
+
+  return `translate3d(${nextPosition.x}px, ${nextPosition.y}px, 0)`;
 }

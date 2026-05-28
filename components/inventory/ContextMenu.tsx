@@ -2,12 +2,14 @@
 
 import {
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
   type KeyboardEvent,
 } from "react";
 import { canEquip } from "@/lib/inventoryLogic";
+import { clampFloatingPosition } from "@/lib/floatingPosition";
 import { useInventoryStore } from "@/store/inventoryStore";
 
 interface MenuAction {
@@ -31,6 +33,7 @@ export function ContextMenu() {
   const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const actions = useMemo<MenuAction[]>(() => {
     if (!contextMenu) {
       return [];
@@ -113,6 +116,27 @@ export function ContextMenu() {
     };
   }, [closeContextMenu, contextMenu]);
 
+  useLayoutEffect(() => {
+    if (!contextMenu || !menuRef.current) {
+      return;
+    }
+
+    const menuRect = menuRef.current.getBoundingClientRect();
+
+    setMenuPosition(
+      clampFloatingPosition(
+        {
+          x: contextMenu.x,
+          y: contextMenu.y,
+        },
+        {
+          height: menuRect.height,
+          width: menuRect.width,
+        },
+      ),
+    );
+  }, [contextMenu]);
+
   if (!contextMenu) {
     return null;
   }
@@ -178,8 +202,8 @@ export function ContextMenu() {
       ref={menuRef}
       role="menu"
       style={{
-        left: contextMenu.x,
-        top: contextMenu.y,
+        left: menuPosition.x,
+        top: menuPosition.y,
       }}
       tabIndex={-1}
     >
