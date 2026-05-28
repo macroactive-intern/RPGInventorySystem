@@ -31,7 +31,8 @@ export type SlotType =
   | "offHand"
   | "neck"
   | "ring"
-  | "trinket";
+  | "trinket"
+  | "back";
 
 /** Numeric stat modifiers an item can grant when equipped or consumed. */
 export interface ItemStats {

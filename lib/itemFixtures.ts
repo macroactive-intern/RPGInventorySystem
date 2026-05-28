@@ -211,6 +211,11 @@ export const starterEquipment: readonly EquipmentSlot[] = [
     item: ironShortsword,
   },
   {
+    id: "706db9cb-c957-4f7e-8017-bad4f6d6cc2f",
+    type: "offHand",
+    item: null,
+  },
+  {
     id: "9e084960-e4bc-44c8-9e90-f5954d7ef408",
     type: "head",
     item: leatherCap,
@@ -229,6 +234,16 @@ export const starterEquipment: readonly EquipmentSlot[] = [
     id: "8851aa5d-a46b-4574-9af6-5d76a92a63f8",
     type: "ring",
     item: garnetRing,
+  },
+  {
+    id: "08c0df6e-a08c-4ef6-a742-5652922842df",
+    type: "ring",
+    item: null,
+  },
+  {
+    id: "42767660-6fc8-41ba-a0f9-f2de5a46b96f",
+    type: "back",
+    item: null,
   },
 ];
 

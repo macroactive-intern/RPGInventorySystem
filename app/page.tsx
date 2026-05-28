@@ -1,4 +1,5 @@
 import { BackpackGrid } from "@/components/inventory/BackpackGrid";
+import { EquipmentPanel } from "@/components/inventory/EquipmentPanel";
 
 export default function Home() {
   return (
@@ -22,7 +23,10 @@ export default function Home() {
             ))}
           </div>
         </section>
-        <BackpackGrid />
+        <div className="grid gap-6 lg:grid-cols-[minmax(320px,420px)_1fr]">
+          <EquipmentPanel />
+          <BackpackGrid />
+        </div>
       </div>
     </main>
   );

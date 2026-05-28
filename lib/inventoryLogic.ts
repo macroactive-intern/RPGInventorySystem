@@ -38,7 +38,7 @@ const equipmentSlotTypesByItemType: Record<
 > = {
   weapon: ["mainHand", "offHand"],
   armor: ["head", "chest", "hands", "legs", "feet"],
-  accessory: ["neck", "ring", "trinket"],
+  accessory: ["neck", "ring", "trinket", "back"],
   consumable: [],
   material: [],
   quest: [],
