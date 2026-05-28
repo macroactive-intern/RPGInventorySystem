@@ -68,6 +68,7 @@ export interface InventoryStoreState extends InventoryCollections {
   rejectedSlot: RejectionAnimationState | null;
   contextMenu: ContextMenuState | null;
   itemInspectionModal: ItemInspectionModalState | null;
+  inventorySearchQuery: string;
   splitStackModal: SplitStackModalState | null;
   tooltip: TooltipState | null;
   moveItem: (from: SlotPointer, to: SlotPointer) => boolean;
@@ -89,6 +90,7 @@ export interface InventoryStoreState extends InventoryCollections {
   closeItemInspectionModal: () => void;
   openSplitStackModal: (slot: SlotPointer) => void;
   closeSplitStackModal: () => void;
+  setInventorySearchQuery: (query: string) => void;
   setRejectedSlot: (slot: SlotPointer, reason?: string) => void;
   clearRejectedSlot: () => void;
   setDraggedItem: (metadata: DraggedItemMetadata | null) => void;
@@ -108,6 +110,7 @@ export const useInventoryStore = create<InventoryStoreState>((set, get) => ({
   rejectedSlot: null,
   contextMenu: null,
   itemInspectionModal: null,
+  inventorySearchQuery: "",
   splitStackModal: null,
   tooltip: null,
   moveItem: (from, to) => {
@@ -321,6 +324,7 @@ export const useInventoryStore = create<InventoryStoreState>((set, get) => ({
       };
     }),
   closeSplitStackModal: () => set({ splitStackModal: null }),
+  setInventorySearchQuery: (query) => set({ inventorySearchQuery: query }),
   setRejectedSlot: (slot, reason) =>
     set({
       rejectedSlot: {

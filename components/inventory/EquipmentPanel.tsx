@@ -116,8 +116,12 @@ interface EquipmentSlotCardProps {
 }
 
 function EquipmentSlotCard({ definition, slot }: EquipmentSlotCardProps) {
+  const inventorySearchQuery = useInventoryStore(
+    (state) => state.inventorySearchQuery,
+  );
   const rejectedSlot = useInventoryStore((state) => state.rejectedSlot);
   const item = slot?.item ?? null;
+  const isSearchMatch = itemMatchesSearch(item, inventorySearchQuery);
   const borderClass = item
     ? rarityBorderClasses[item.rarity]
     : "border-dashed border-slate-700";
@@ -131,6 +135,10 @@ function EquipmentSlotCard({ definition, slot }: EquipmentSlotCardProps) {
     <InventoryDroppableSlot
       className={`relative z-10 min-h-28 rounded-md border bg-slate-950/90 p-3 transition-shadow ${borderClass} ${
         isRejected ? "bg-red-950/20" : ""
+      } ${
+        isSearchMatch
+          ? "ring-2 ring-amber-300 shadow-[0_0_24px_rgba(252,211,77,0.45)]"
+          : ""
       } ${definition.className}`}
       label={
         item
@@ -151,7 +159,9 @@ function EquipmentSlotCard({ definition, slot }: EquipmentSlotCardProps) {
 
         {item ? (
           <DraggableInventoryItem
-            className="cursor-grab touch-none active:cursor-grabbing"
+            className={`cursor-grab touch-none rounded active:cursor-grabbing ${
+              isSearchMatch ? "bg-amber-950/40 p-2" : ""
+            }`}
             item={item}
             source={slotPointer}
           >
@@ -225,4 +235,15 @@ function getIconPlaceholder(item: InventoryItem): string {
     .map((part) => part[0])
     .join("")
     .toUpperCase();
+}
+
+function itemMatchesSearch(
+  item: InventoryItem | null,
+  searchQuery: string,
+): boolean {
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+
+  return Boolean(
+    normalizedQuery && item?.name.toLowerCase().includes(normalizedQuery),
+  );
 }

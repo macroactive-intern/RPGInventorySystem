@@ -65,7 +65,11 @@ interface HotbarSlotCellProps {
 }
 
 function HotbarSlotCell({ index, item, slotId }: HotbarSlotCellProps) {
+  const inventorySearchQuery = useInventoryStore(
+    (state) => state.inventorySearchQuery,
+  );
   const slotNumber = index + 1;
+  const isSearchMatch = itemMatchesSearch(item, inventorySearchQuery);
   const borderClass = item
     ? rarityBorderClasses[item.rarity]
     : "border-dashed border-slate-700";
@@ -76,7 +80,11 @@ function HotbarSlotCell({ index, item, slotId }: HotbarSlotCellProps) {
 
   return (
     <InventoryDroppableSlot
-      className={`relative aspect-square min-h-20 rounded-md border bg-slate-950 p-2 shadow-md shadow-black/20 transition-shadow ${borderClass}`}
+      className={`relative aspect-square min-h-20 rounded-md border bg-slate-950 p-2 shadow-md shadow-black/20 transition-shadow ${borderClass} ${
+        isSearchMatch
+          ? "ring-2 ring-amber-300 shadow-[0_0_24px_rgba(252,211,77,0.45)]"
+          : ""
+      }`}
       label={
         item
           ? `Hotbar slot ${slotNumber}: ${item.name}, quantity ${item.quantity}`
@@ -91,7 +99,9 @@ function HotbarSlotCell({ index, item, slotId }: HotbarSlotCellProps) {
 
       {item ? (
         <DraggableInventoryItem
-          className="flex h-full cursor-grab touch-none flex-col justify-between pt-5 active:cursor-grabbing"
+          className={`flex h-full cursor-grab touch-none flex-col justify-between rounded pt-5 active:cursor-grabbing ${
+            isSearchMatch ? "bg-amber-950/40 px-1 pb-1" : ""
+          }`}
           item={item}
           source={slot}
         >
@@ -124,4 +134,15 @@ function getIconPlaceholder(item: InventoryItem): string {
     .map((part) => part[0])
     .join("")
     .toUpperCase();
+}
+
+function itemMatchesSearch(
+  item: InventoryItem | null,
+  searchQuery: string,
+): boolean {
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+
+  return Boolean(
+    normalizedQuery && item?.name.toLowerCase().includes(normalizedQuery),
+  );
 }

@@ -3,6 +3,7 @@ import { CraftingPanel } from "@/components/inventory/CraftingPanel";
 import { EquipmentPanel } from "@/components/inventory/EquipmentPanel";
 import { Hotbar } from "@/components/inventory/Hotbar";
 import { InventoryDndProvider } from "@/components/inventory/InventoryDnd";
+import { InventorySearch } from "@/components/inventory/InventorySearch";
 import { WeightPanel } from "@/components/inventory/WeightPanel";
 
 export default function Home() {
@@ -26,6 +27,7 @@ export default function Home() {
         </header>
 
         <InventoryDndProvider>
+          <InventorySearch />
           <div className="grid gap-5 xl:grid-cols-[minmax(320px,420px)_1fr]">
             <aside className="flex flex-col gap-5">
               <EquipmentPanel />

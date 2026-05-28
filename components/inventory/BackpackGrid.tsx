@@ -77,10 +77,14 @@ interface InventorySlotCellProps {
 }
 
 function InventorySlotCell({ index, item, slotId }: InventorySlotCellProps) {
+  const inventorySearchQuery = useInventoryStore(
+    (state) => state.inventorySearchQuery,
+  );
   const rarityBorder = item
     ? rarityBorderClasses[item.rarity]
     : "border-slate-700";
   const rarityGlow = item ? rarityGlowClasses[item.rarity] : "shadow-black/20";
+  const isSearchMatch = itemMatchesSearch(item, inventorySearchQuery);
   const slot = {
     container: "backpack" as const,
     slotId: slotId ?? `missing-backpack-slot-${index}`,
@@ -88,7 +92,11 @@ function InventorySlotCell({ index, item, slotId }: InventorySlotCellProps) {
 
   return (
     <InventoryDroppableSlot
-      className={`relative aspect-square rounded-md border bg-slate-900/90 p-1.5 shadow-md transition-shadow ${rarityBorder} ${rarityGlow}`}
+      className={`relative aspect-square rounded-md border bg-slate-900/90 p-1.5 shadow-md transition-shadow ${rarityBorder} ${rarityGlow} ${
+        isSearchMatch
+          ? "ring-2 ring-amber-300 shadow-[0_0_24px_rgba(252,211,77,0.45)]"
+          : ""
+      }`}
       label={
         item
           ? `Backpack slot ${index + 1}: ${item.name}, quantity ${item.quantity}`
@@ -99,7 +107,9 @@ function InventorySlotCell({ index, item, slotId }: InventorySlotCellProps) {
     >
       {item ? (
         <DraggableInventoryItem
-          className="flex h-full cursor-grab touch-none flex-col justify-between rounded bg-slate-800 p-1.5 active:cursor-grabbing"
+          className={`flex h-full cursor-grab touch-none flex-col justify-between rounded p-1.5 active:cursor-grabbing ${
+            isSearchMatch ? "bg-amber-950/50" : "bg-slate-800"
+          }`}
           item={item}
           source={slot}
         >
@@ -132,4 +142,15 @@ function getIconPlaceholder(item: InventoryItem): string {
     .map((part) => part[0])
     .join("")
     .toUpperCase();
+}
+
+function itemMatchesSearch(
+  item: InventoryItem | null,
+  searchQuery: string,
+): boolean {
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+
+  return Boolean(
+    normalizedQuery && item?.name.toLowerCase().includes(normalizedQuery),
+  );
 }
