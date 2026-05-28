@@ -4,6 +4,7 @@ import {
   useEffect,
   useRef,
   type CSSProperties,
+  type MouseEvent,
   type PointerEvent,
   type ReactNode,
 } from "react";
@@ -20,6 +21,7 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
+import { ContextMenu } from "@/components/inventory/ContextMenu";
 import { DragOverlayItem } from "@/components/inventory/DragOverlayItem";
 import { ItemTooltip } from "@/components/inventory/ItemTooltip";
 import { useInventoryStore, type SlotPointer } from "@/store/inventoryStore";
@@ -125,6 +127,7 @@ export function InventoryDndProvider({ children }: InventoryDndProviderProps) {
       <DragOverlay>
         {draggedItem ? <DragOverlayItem item={draggedItem.item} /> : null}
       </DragOverlay>
+      <ContextMenu />
       <ItemTooltip />
     </DndContext>
   );
@@ -182,6 +185,7 @@ export function DraggableInventoryItem({
   item,
   source,
 }: DraggableInventoryItemProps) {
+  const openContextMenu = useInventoryStore((state) => state.openContextMenu);
   const setTooltip = useInventoryStore((state) => state.setTooltip);
   const { attributes, isDragging, listeners, setNodeRef, transform } =
     useDraggable({
@@ -202,10 +206,20 @@ export function DraggableInventoryItem({
       y: event.clientY,
     });
   };
+  const handleContextMenu = (event: MouseEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setTooltip(null);
+    openContextMenu(source, {
+      x: event.clientX,
+      y: event.clientY,
+    });
+  };
 
   return (
     <div
       className={`${className} ${isDragging ? "opacity-40" : ""}`}
+      onContextMenu={handleContextMenu}
       onPointerEnter={showTooltip}
       onPointerLeave={() => setTooltip(null)}
       onPointerMove={showTooltip}
