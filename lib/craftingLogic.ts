@@ -1,6 +1,7 @@
 import type { CraftingIngredient, CraftingRecipe } from "@/types/crafting";
 import type { BackpackSlot, InventoryItem, UUID } from "@/types/inventory";
 import type { InventoryCollections } from "@/lib/inventoryLogic";
+import { getTemplateId } from "@/lib/itemIdentity";
 
 export type CraftFailureReason =
   | "invalid-recipe"
@@ -293,6 +294,3 @@ function combineIngredients(
   }, []);
 }
 
-function getTemplateId(item: InventoryItem): UUID {
-  return item.templateId ?? item.id;
-}

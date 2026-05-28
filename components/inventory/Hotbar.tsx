@@ -3,20 +3,16 @@
 import { useInventoryStore } from "@/store/inventoryStore";
 import type { InventoryItem } from "@/types/inventory";
 import {
+  getIconPlaceholder,
+  itemMatchesSearch,
+  rarityBorderClasses,
+} from "@/lib/inventoryDisplay";
+import {
   DraggableInventoryItem,
   InventoryDroppableSlot,
 } from "@/components/inventory/InventoryDnd";
 
 const HOTBAR_SLOT_COUNT = 5;
-
-const rarityBorderClasses: Record<InventoryItem["rarity"], string> = {
-  common: "border-slate-500",
-  uncommon: "border-emerald-500",
-  rare: "border-sky-500",
-  epic: "border-violet-500",
-  legendary: "border-amber-500",
-  mythic: "border-rose-500",
-};
 
 export function Hotbar() {
   const hotbar = useInventoryStore((state) => state.hotbar);
@@ -126,23 +122,3 @@ function HotbarSlotCell({ index, item, slotId }: HotbarSlotCellProps) {
   );
 }
 
-function getIconPlaceholder(item: InventoryItem): string {
-  return item.name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase();
-}
-
-function itemMatchesSearch(
-  item: InventoryItem | null,
-  searchQuery: string,
-): boolean {
-  const normalizedQuery = searchQuery.trim().toLowerCase();
-
-  return Boolean(
-    normalizedQuery && item?.name.toLowerCase().includes(normalizedQuery),
-  );
-}

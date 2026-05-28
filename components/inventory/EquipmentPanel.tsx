@@ -1,20 +1,17 @@
 "use client";
 
-import type { EquipmentSlot, InventoryItem, SlotType } from "@/types/inventory";
+import type { EquipmentSlot, SlotType } from "@/types/inventory";
+import {
+  getIconPlaceholder,
+  itemMatchesSearch,
+  rarityBorderClasses,
+} from "@/lib/inventoryDisplay";
+import { isSameSlot } from "@/lib/inventoryLogic";
 import { useInventoryStore } from "@/store/inventoryStore";
 import {
   DraggableInventoryItem,
   InventoryDroppableSlot,
 } from "@/components/inventory/InventoryDnd";
-
-const rarityBorderClasses: Record<InventoryItem["rarity"], string> = {
-  common: "border-slate-500",
-  uncommon: "border-emerald-500",
-  rare: "border-sky-500",
-  epic: "border-violet-500",
-  legendary: "border-amber-500",
-  mythic: "border-rose-500",
-};
 
 interface EquipmentSlotDefinition {
   label: string;
@@ -220,30 +217,3 @@ function findEquipmentSlot(
   return matchingSlots[occurrence] ?? null;
 }
 
-function isSameSlot(
-  first: { container: string; slotId: string } | null,
-  second: { container: string; slotId: string },
-): boolean {
-  return first?.container === second.container && first.slotId === second.slotId;
-}
-
-function getIconPlaceholder(item: InventoryItem): string {
-  return item.name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase();
-}
-
-function itemMatchesSearch(
-  item: InventoryItem | null,
-  searchQuery: string,
-): boolean {
-  const normalizedQuery = searchQuery.trim().toLowerCase();
-
-  return Boolean(
-    normalizedQuery && item?.name.toLowerCase().includes(normalizedQuery),
-  );
-}

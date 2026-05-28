@@ -1,6 +1,12 @@
 "use client";
 
 import type { InventoryItem } from "@/types/inventory";
+import {
+  getIconPlaceholder,
+  itemMatchesSearch,
+  rarityBorderClasses,
+  rarityGlowClasses,
+} from "@/lib/inventoryDisplay";
 import { useInventoryStore } from "@/store/inventoryStore";
 import {
   DraggableInventoryItem,
@@ -8,24 +14,6 @@ import {
 } from "@/components/inventory/InventoryDnd";
 
 const SLOT_COUNT = 30;
-
-const rarityBorderClasses: Record<InventoryItem["rarity"], string> = {
-  common: "border-slate-500",
-  uncommon: "border-emerald-500",
-  rare: "border-sky-500",
-  epic: "border-violet-500",
-  legendary: "border-amber-500",
-  mythic: "border-rose-500",
-};
-
-const rarityGlowClasses: Record<InventoryItem["rarity"], string> = {
-  common: "shadow-slate-950/20",
-  uncommon: "shadow-emerald-950/40",
-  rare: "shadow-sky-950/40",
-  epic: "shadow-violet-950/40",
-  legendary: "shadow-amber-950/40",
-  mythic: "shadow-rose-950/40",
-};
 
 export function BackpackGrid() {
   const backpack = useInventoryStore((state) => state.backpack);
@@ -134,23 +122,3 @@ function InventorySlotCell({ index, item, slotId }: InventorySlotCellProps) {
   );
 }
 
-function getIconPlaceholder(item: InventoryItem): string {
-  return item.name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase();
-}
-
-function itemMatchesSearch(
-  item: InventoryItem | null,
-  searchQuery: string,
-): boolean {
-  const normalizedQuery = searchQuery.trim().toLowerCase();
-
-  return Boolean(
-    normalizedQuery && item?.name.toLowerCase().includes(normalizedQuery),
-  );
-}

@@ -1,24 +1,11 @@
 "use client";
 
+import {
+  getIconPlaceholder,
+  rarityBorderClasses,
+  rarityTextClasses,
+} from "@/lib/inventoryDisplay";
 import type { InventoryItem } from "@/types/inventory";
-
-const rarityBorderClasses: Record<InventoryItem["rarity"], string> = {
-  common: "border-slate-500",
-  uncommon: "border-emerald-500",
-  rare: "border-sky-500",
-  epic: "border-violet-500",
-  legendary: "border-amber-500",
-  mythic: "border-rose-500",
-};
-
-const rarityTextClasses: Record<InventoryItem["rarity"], string> = {
-  common: "text-slate-300",
-  uncommon: "text-emerald-300",
-  rare: "text-sky-300",
-  epic: "text-violet-300",
-  legendary: "text-amber-300",
-  mythic: "text-rose-300",
-};
 
 interface DragOverlayItemProps {
   item: InventoryItem;
@@ -51,12 +38,3 @@ export function DragOverlayItem({ item }: DragOverlayItemProps) {
   );
 }
 
-function getIconPlaceholder(item: InventoryItem): string {
-  return item.name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase();
-}

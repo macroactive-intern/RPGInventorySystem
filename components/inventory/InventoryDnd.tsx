@@ -27,6 +27,7 @@ import { DragOverlayItem } from "@/components/inventory/DragOverlayItem";
 import { ItemInspectionModal } from "@/components/inventory/ItemInspectionModal";
 import { ItemTooltip } from "@/components/inventory/ItemTooltip";
 import { SplitStackModal } from "@/components/inventory/SplitStackModal";
+import { isSameSlot } from "@/lib/inventoryLogic";
 import { useInventoryStore, type SlotPointer } from "@/store/inventoryStore";
 import type { InventoryItem } from "@/types/inventory";
 
@@ -268,13 +269,6 @@ function isSlotPointer(value: unknown): value is SlotPointer {
     value !== null &&
     "container" in value &&
     "slotId" in value
-  );
-}
-
-function isSameSlot(first: SlotPointer | null, second: SlotPointer): boolean {
-  return (
-    first?.container === second.container &&
-    first.slotId === second.slotId
   );
 }
 

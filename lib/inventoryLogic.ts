@@ -6,6 +6,7 @@ import type {
   SlotType,
   UUID,
 } from "@/types/inventory";
+import { getTemplateId } from "@/lib/itemIdentity";
 
 export type InventoryContainer = "backpack" | "equipment" | "hotbar";
 
@@ -134,7 +135,7 @@ export function splitStack(
     return null;
   }
 
-  const templateId = getItemTemplateId(item);
+  const templateId = getTemplateId(item);
 
   return {
     remaining: { ...item, templateId, quantity: item.quantity - amount },
@@ -294,14 +295,10 @@ function canMergeStacks(
 
 function canMergeItems(source: InventoryItem, target: InventoryItem): boolean {
   return (
-    getItemTemplateId(source) === getItemTemplateId(target) &&
+    getTemplateId(source) === getTemplateId(target) &&
     source.maxStack > 1 &&
     target.maxStack > 1
   );
-}
-
-function getItemTemplateId(item: InventoryItem): UUID {
-  return item.templateId ?? item.id;
 }
 
 function canPlaceItemInSlot(
@@ -330,8 +327,15 @@ function isEquipmentSlot(slot: AnyInventorySlot): slot is EquipmentSlot {
   return "type" in slot;
 }
 
-function isSameSlot(first: SlotReference, second: SlotReference): boolean {
-  return first.container === second.container && first.slotId === second.slotId;
+export function isSameSlot(
+  first: SlotReference | null,
+  second: SlotReference,
+): boolean {
+  return Boolean(
+    first &&
+      first.container === second.container &&
+      first.slotId === second.slotId,
+  );
 }
 
 function updateSlots(

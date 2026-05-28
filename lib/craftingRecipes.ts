@@ -1,4 +1,5 @@
 import { itemTemplates } from "@/lib/itemFixtures";
+import { getTemplateId } from "@/lib/itemIdentity";
 import type { CraftingRecipe } from "@/types/crafting";
 import type { InventoryItem } from "@/types/inventory";
 
@@ -47,6 +48,3 @@ function createRecipeResult(item: InventoryItem): InventoryItem {
   };
 }
 
-function getTemplateId(item: InventoryItem): string {
-  return item.templateId ?? item.id;
-}

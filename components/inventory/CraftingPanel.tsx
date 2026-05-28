@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { getIconPlaceholder } from "@/lib/inventoryDisplay";
+import { getTemplateId } from "@/lib/itemIdentity";
 import { useInventoryStore } from "@/store/inventoryStore";
 import type { CraftingIngredient, CraftingRecipe } from "@/types/crafting";
 import type { BackpackSlot, InventoryItem } from "@/types/inventory";
@@ -319,16 +321,3 @@ function countIngredients(
   }, new Map<string, number>());
 }
 
-function getTemplateId(item: InventoryItem): string {
-  return item.templateId ?? item.id;
-}
-
-function getIconPlaceholder(item: InventoryItem): string {
-  return item.name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase();
-}

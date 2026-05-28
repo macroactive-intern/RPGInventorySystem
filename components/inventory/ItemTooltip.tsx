@@ -1,6 +1,10 @@
 "use client";
 
 import { canEquip } from "@/lib/inventoryLogic";
+import {
+  rarityBorderClasses,
+  rarityTextClasses,
+} from "@/lib/inventoryDisplay";
 import { useInventoryStore } from "@/store/inventoryStore";
 import type { InventoryItem, ItemStats } from "@/types/inventory";
 
@@ -22,24 +26,6 @@ const percentageStats = new Set<keyof ItemStats>([
   "criticalChance",
   "criticalDamage",
 ]);
-
-const rarityTextClasses: Record<InventoryItem["rarity"], string> = {
-  common: "text-slate-300",
-  uncommon: "text-emerald-300",
-  rare: "text-sky-300",
-  epic: "text-violet-300",
-  legendary: "text-amber-300",
-  mythic: "text-rose-300",
-};
-
-const rarityBorderClasses: Record<InventoryItem["rarity"], string> = {
-  common: "border-slate-500",
-  uncommon: "border-emerald-500",
-  rare: "border-sky-500",
-  epic: "border-violet-500",
-  legendary: "border-amber-500",
-  mythic: "border-rose-500",
-};
 
 export function ItemTooltip() {
   const equipment = useInventoryStore((state) => state.equipment);
