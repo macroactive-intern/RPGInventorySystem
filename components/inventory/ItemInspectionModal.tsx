@@ -10,21 +10,8 @@ import {
   useInventoryStore,
   type ItemInspectionModalState,
 } from "@/store/inventoryStore";
+import { formatStatValue, statLabels } from "@/lib/inventoryDisplay";
 import type { ItemStats } from "@/types/inventory";
-
-const statLabels: Record<keyof ItemStats, string> = {
-  strength: "Strength",
-  dexterity: "Dexterity",
-  intelligence: "Intelligence",
-  vitality: "Vitality",
-  armor: "Armor",
-  damageMin: "Damage Min",
-  damageMax: "Damage Max",
-  criticalChance: "Critical Chance",
-  criticalDamage: "Critical Damage",
-  healthRestore: "Health Restore",
-  manaRestore: "Mana Restore",
-};
 
 const rarityClasses = {
   common: "border-slate-500 text-slate-200",
@@ -189,12 +176,4 @@ function getStatEntries(
 
   return (Object.entries(stats) as [keyof ItemStats, number | undefined][])
     .filter((entry): entry is [keyof ItemStats, number] => entry[1] !== undefined);
-}
-
-function formatStatValue(key: keyof ItemStats, value: number): string {
-  if (key === "criticalChance" || key === "criticalDamage") {
-    return `${value}%`;
-  }
-
-  return value > 0 ? `+${value}` : value.toString();
 }

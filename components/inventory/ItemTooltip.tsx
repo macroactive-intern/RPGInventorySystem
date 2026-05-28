@@ -3,8 +3,10 @@
 import { useLayoutEffect } from "react";
 import { canEquip } from "@/lib/inventoryLogic";
 import {
+  formatStatValue,
   rarityBorderClasses,
   rarityTextClasses,
+  statLabels,
 } from "@/lib/inventoryDisplay";
 import {
   getTooltipTransform,
@@ -12,25 +14,6 @@ import {
 } from "@/components/inventory/TooltipPositionProvider";
 import { useInventoryStore } from "@/store/inventoryStore";
 import type { InventoryItem, ItemStats } from "@/types/inventory";
-
-const statLabels: Record<keyof ItemStats, string> = {
-  armor: "Armor",
-  criticalChance: "Critical chance",
-  criticalDamage: "Critical damage",
-  damageMax: "Max damage",
-  damageMin: "Min damage",
-  dexterity: "Dexterity",
-  healthRestore: "Health restore",
-  intelligence: "Intelligence",
-  manaRestore: "Mana restore",
-  strength: "Strength",
-  vitality: "Vitality",
-};
-
-const percentageStats = new Set<keyof ItemStats>([
-  "criticalChance",
-  "criticalDamage",
-]);
 
 export function ItemTooltip() {
   const equipment = useInventoryStore((state) => state.equipment);
@@ -143,20 +126,4 @@ function getComparisonClass(
   }
 
   return value > comparedValue ? "text-emerald-300" : "text-red-300";
-}
-
-function formatStatValue(key: keyof ItemStats, value: number | undefined): string {
-  if (value === undefined) {
-    return "-";
-  }
-
-  if (percentageStats.has(key)) {
-    return `${formatSignedNumber(value * 100)}%`;
-  }
-
-  return formatSignedNumber(value);
-}
-
-function formatSignedNumber(value: number): string {
-  return value > 0 ? `+${value}` : String(value);
 }

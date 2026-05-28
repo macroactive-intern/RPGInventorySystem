@@ -1,4 +1,23 @@
-import type { InventoryItem } from "@/types/inventory";
+import type { InventoryItem, ItemStats } from "@/types/inventory";
+
+export const statLabels: Record<keyof ItemStats, string> = {
+  armor: "Armor",
+  criticalChance: "Critical Chance",
+  criticalDamage: "Critical Damage",
+  damageMax: "Max Damage",
+  damageMin: "Min Damage",
+  dexterity: "Dexterity",
+  healthRestore: "Health Restore",
+  intelligence: "Intelligence",
+  manaRestore: "Mana Restore",
+  strength: "Strength",
+  vitality: "Vitality",
+};
+
+const percentageStats = new Set<keyof ItemStats>([
+  "criticalChance",
+  "criticalDamage",
+]);
 
 export const rarityBorderClasses: Record<InventoryItem["rarity"], string> = {
   common: "border-slate-500",
@@ -46,4 +65,24 @@ export function itemMatchesSearch(
   return Boolean(
     normalizedQuery && item?.name.toLowerCase().includes(normalizedQuery),
   );
+}
+
+export function formatStatValue(
+  key: keyof ItemStats,
+  value: number | undefined,
+  emptyValue = "-",
+): string {
+  if (value === undefined) {
+    return emptyValue;
+  }
+
+  if (percentageStats.has(key)) {
+    return `${formatSignedNumber(value * 100)}%`;
+  }
+
+  return formatSignedNumber(value);
+}
+
+function formatSignedNumber(value: number): string {
+  return value > 0 ? `+${value}` : String(value);
 }
