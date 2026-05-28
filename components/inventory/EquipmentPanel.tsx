@@ -116,7 +116,6 @@ function EquipmentSlotCard({ definition, slot }: EquipmentSlotCardProps) {
   const inventorySearchQuery = useInventoryStore(
     (state) => state.inventorySearchQuery,
   );
-  const rejectedSlot = useInventoryStore((state) => state.rejectedSlot);
   const item = slot?.item ?? null;
   const isSearchMatch = itemMatchesSearch(item, inventorySearchQuery);
   const borderClass = item
@@ -126,7 +125,12 @@ function EquipmentSlotCard({ definition, slot }: EquipmentSlotCardProps) {
     container: "equipment" as const,
     slotId: slot?.id ?? `missing-equipment-slot-${definition.label}`,
   };
-  const isRejected = isSameSlot(rejectedSlot?.slot ?? null, slotPointer);
+  const rejectionReason = useInventoryStore((state) =>
+    isSameSlot(state.rejectedSlot?.slot ?? null, slotPointer)
+      ? (state.rejectedSlot?.reason ?? "Invalid drop")
+      : null,
+  );
+  const isRejected = rejectionReason !== null;
 
   return (
     <InventoryDroppableSlot
@@ -183,7 +187,7 @@ function EquipmentSlotCard({ definition, slot }: EquipmentSlotCardProps) {
             className="rounded bg-red-950/80 px-2 py-1 text-xs font-semibold text-red-100"
             role="status"
           >
-            {rejectedSlot?.reason ?? "Invalid drop"}
+            {rejectionReason}
           </div>
         ) : null}
       </div>

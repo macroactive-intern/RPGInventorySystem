@@ -166,7 +166,9 @@ export function InventoryDroppableSlot({
   role,
   slot,
 }: InventoryDroppableSlotProps) {
-  const rejectedSlot = useInventoryStore((state) => state.rejectedSlot);
+  const isRejected = useInventoryStore((state) =>
+    isSameSlot(state.rejectedSlot?.slot ?? null, slot),
+  );
   const { isOver, setNodeRef } = useDroppable({
     id: getSlotDndId(slot),
     data: {
@@ -178,7 +180,7 @@ export function InventoryDroppableSlot({
     <div
       aria-label={label}
       className={`${className} ${isOver ? "ring-2 ring-emerald-300" : ""} ${
-        isSameSlot(rejectedSlot?.slot ?? null, slot)
+        isRejected
           ? "animate-pulse ring-2 ring-red-400 shadow-[0_0_24px_rgba(248,113,113,0.6)]"
           : ""
       }`}
