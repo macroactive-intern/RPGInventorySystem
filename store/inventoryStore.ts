@@ -50,10 +50,16 @@ export interface TooltipState {
   y: number;
 }
 
+export interface SplitStackModalState {
+  item: InventoryItem;
+  slot: SlotPointer;
+}
+
 export interface InventoryStoreState extends InventoryCollections {
   draggedItem: DraggedItemMetadata | null;
   rejectedSlot: RejectionAnimationState | null;
   contextMenu: ContextMenuState | null;
+  splitStackModal: SplitStackModalState | null;
   tooltip: TooltipState | null;
   moveItem: (from: SlotPointer, to: SlotPointer) => boolean;
   equipItem: (from: SlotPointer, preferredSlotId?: UUID) => void;
@@ -62,13 +68,15 @@ export interface InventoryStoreState extends InventoryCollections {
     source: SlotPointer,
     amount: number,
     target?: SlotPointer,
-  ) => void;
+  ) => boolean;
   removeItem: (slot: SlotPointer) => void;
   openContextMenu: (
     slot: SlotPointer,
     position: { x: number; y: number },
   ) => void;
   closeContextMenu: () => void;
+  openSplitStackModal: (slot: SlotPointer) => void;
+  closeSplitStackModal: () => void;
   setRejectedSlot: (slot: SlotPointer, reason?: string) => void;
   clearRejectedSlot: () => void;
   setDraggedItem: (metadata: DraggedItemMetadata | null) => void;
@@ -86,6 +94,7 @@ export const useInventoryStore = create<InventoryStoreState>((set, get) => ({
   draggedItem: null,
   rejectedSlot: null,
   contextMenu: null,
+  splitStackModal: null,
   tooltip: null,
   moveItem: (from, to) => {
     const result = moveItemWithResult(getInventoryCollections(get()), from, to);
@@ -144,39 +153,41 @@ export const useInventoryStore = create<InventoryStoreState>((set, get) => ({
         ),
       };
     }),
-  splitStack: (source, amount, target) =>
-    set((state) => {
-      const sourceSlot = findSlot(state, source);
-      const targetSlot = target
-        ? findSlot(state, target)
-        : state.backpack.find((slot) => slot.item === null);
+  splitStack: (source, amount, target) => {
+    const state = get();
+    const sourceSlot = findSlot(state, source);
+    const targetSlot = target
+      ? findSlot(state, target)
+      : state.backpack.find((slot) => slot.item === null);
 
-      if (!sourceSlot?.item || !targetSlot || targetSlot.item) {
-        return {};
-      }
+    if (!sourceSlot?.item || !targetSlot || targetSlot.item) {
+      return false;
+    }
 
-      if (isEquipmentSlot(targetSlot) && !canEquip(sourceSlot.item, targetSlot)) {
-        return {};
-      }
+    if (isEquipmentSlot(targetSlot) && !canEquip(sourceSlot.item, targetSlot)) {
+      return false;
+    }
 
-      const splitResult = splitInventoryStack(sourceSlot.item, amount);
+    const splitResult = splitInventoryStack(sourceSlot.item, amount);
 
-      if (!splitResult) {
-        return {};
-      }
+    if (!splitResult) {
+      return false;
+    }
 
-      const targetSlotPointer: SlotPointer = target ?? {
-        container: "backpack",
-        slotId: targetSlot.id,
-      };
+    const targetSlotPointer: SlotPointer = target ?? {
+      container: "backpack",
+      slotId: targetSlot.id,
+    };
 
-      return {
-        ...updateSlots(state, [
-          { slot: source, item: splitResult.remaining },
-          { slot: targetSlotPointer, item: splitResult.split },
-        ]),
-      };
-    }),
+    set({
+      ...updateSlots(state, [
+        { slot: source, item: splitResult.remaining },
+        { slot: targetSlotPointer, item: splitResult.split },
+      ]),
+    });
+
+    return true;
+  },
   removeItem: (slot) =>
     set((state) => ({
       ...updateSlots(state, [{ slot, item: null }]),
@@ -199,6 +210,22 @@ export const useInventoryStore = create<InventoryStoreState>((set, get) => ({
       };
     }),
   closeContextMenu: () => set({ contextMenu: null }),
+  openSplitStackModal: (slot) =>
+    set((state) => {
+      const targetSlot = findSlot(state, slot);
+
+      if (!targetSlot?.item || targetSlot.item.quantity <= 1) {
+        return { splitStackModal: null };
+      }
+
+      return {
+        splitStackModal: {
+          item: targetSlot.item,
+          slot,
+        },
+      };
+    }),
+  closeSplitStackModal: () => set({ splitStackModal: null }),
   setRejectedSlot: (slot, reason) =>
     set({
       rejectedSlot: {

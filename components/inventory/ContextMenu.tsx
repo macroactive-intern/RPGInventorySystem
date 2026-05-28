@@ -21,9 +21,11 @@ export function ContextMenu() {
   const contextMenu = useInventoryStore((state) => state.contextMenu);
   const equipment = useInventoryStore((state) => state.equipment);
   const equipItem = useInventoryStore((state) => state.equipItem);
+  const openSplitStackModal = useInventoryStore(
+    (state) => state.openSplitStackModal,
+  );
   const removeItem = useInventoryStore((state) => state.removeItem);
   const setTooltip = useInventoryStore((state) => state.setTooltip);
-  const splitStack = useInventoryStore((state) => state.splitStack);
   const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -56,7 +58,7 @@ export function ContextMenu() {
         disabled: contextMenu.item.quantity <= 1,
         label: "Split Stack",
         onSelect: () => {
-          splitStack(contextMenu.slot, Math.floor(contextMenu.item.quantity / 2));
+          openSplitStackModal(contextMenu.slot);
           closeContextMenu();
         },
       },
@@ -78,9 +80,9 @@ export function ContextMenu() {
     contextMenu,
     equipment,
     equipItem,
+    openSplitStackModal,
     removeItem,
     setTooltip,
-    splitStack,
   ]);
 
   useEffect(() => {
