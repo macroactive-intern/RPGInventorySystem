@@ -10,6 +10,7 @@ import {
   canEquip,
   mergeStacks,
   moveItem,
+  moveItemWithResult,
   splitStack,
   swapItems,
   type InventoryCollections,
@@ -255,5 +256,142 @@ describe("inventoryLogic", () => {
     expect(result.equipment[0].item?.id).toBe(newHelmet.id);
     expect(result.backpack[0].item?.id).toBe(oldHelmet.id);
     expect(inventory.equipment[0].item?.id).toBe(oldHelmet.id);
+  });
+
+  it("rejects invalid equipment drops without changing inventory", () => {
+    const potion = makeItem({
+      id: "10000000-0000-4000-8000-000000000014",
+      name: "Minor Healing Potion",
+      type: "consumable",
+      maxStack: 10,
+      quantity: 2,
+    });
+    const backpackSlot = makeBackpackSlot(
+      "30000000-0000-4000-8000-000000000004",
+      0,
+      potion,
+    );
+    const headSlot = makeEquipmentSlot(
+      "20000000-0000-4000-8000-000000000007",
+      "head",
+      null,
+    );
+    const inventory = makeInventory([backpackSlot], [headSlot]);
+
+    const result = moveItemWithResult(
+      inventory,
+      { container: "backpack", slotId: backpackSlot.id },
+      { container: "equipment", slotId: headSlot.id },
+    );
+
+    expect(result.valid).toBe(false);
+    expect(result.moved).toBe(false);
+    expect(result.inventory.backpack[0].item?.id).toBe(potion.id);
+    expect(result.inventory.equipment[0].item).toBeNull();
+  });
+
+  it("swaps different backpack items without losing either item", () => {
+    const ore = makeItem({
+      id: "10000000-0000-4000-8000-000000000015",
+      name: "Iron Ore",
+      maxStack: 20,
+      quantity: 3,
+    });
+    const pelt = makeItem({
+      id: "10000000-0000-4000-8000-000000000016",
+      name: "Cured Wolf Pelt",
+      maxStack: 15,
+      quantity: 2,
+    });
+    const firstBackpackSlot = makeBackpackSlot(
+      "30000000-0000-4000-8000-000000000005",
+      0,
+      ore,
+    );
+    const secondBackpackSlot = makeBackpackSlot(
+      "30000000-0000-4000-8000-000000000006",
+      1,
+      pelt,
+    );
+    const inventory = makeInventory([firstBackpackSlot, secondBackpackSlot], []);
+
+    const result = moveItemWithResult(
+      inventory,
+      { container: "backpack", slotId: firstBackpackSlot.id },
+      { container: "backpack", slotId: secondBackpackSlot.id },
+    );
+
+    expect(result.valid).toBe(true);
+    expect(result.moved).toBe(true);
+    expect(result.inventory.backpack[0].item?.id).toBe(pelt.id);
+    expect(result.inventory.backpack[1].item?.id).toBe(ore.id);
+  });
+
+  it("allows unequipping to an empty backpack slot", () => {
+    const helmet = makeItem({
+      id: "10000000-0000-4000-8000-000000000017",
+      name: "Iron Helm",
+      type: "armor",
+      allowedSlots: ["head"],
+    });
+    const backpackSlot = makeBackpackSlot(
+      "30000000-0000-4000-8000-000000000007",
+      0,
+      null,
+    );
+    const headSlot = makeEquipmentSlot(
+      "20000000-0000-4000-8000-000000000008",
+      "head",
+      helmet,
+    );
+    const inventory = makeInventory([backpackSlot], [headSlot]);
+
+    const result = moveItemWithResult(
+      inventory,
+      { container: "equipment", slotId: headSlot.id },
+      { container: "backpack", slotId: backpackSlot.id },
+    );
+
+    expect(result.valid).toBe(true);
+    expect(result.moved).toBe(true);
+    expect(result.inventory.equipment[0].item).toBeNull();
+    expect(result.inventory.backpack[0].item?.id).toBe(helmet.id);
+  });
+
+  it("rejects full stack merges without changing quantities", () => {
+    const source = makeItem({
+      id: "10000000-0000-4000-8000-000000000018",
+      name: "Iron Ore",
+      maxStack: 10,
+      quantity: 4,
+    });
+    const target = makeItem({
+      id: source.id,
+      name: "Iron Ore",
+      maxStack: 10,
+      quantity: 10,
+    });
+    const sourceSlot = makeBackpackSlot(
+      "30000000-0000-4000-8000-000000000008",
+      0,
+      source,
+    );
+    const targetSlot = makeBackpackSlot(
+      "30000000-0000-4000-8000-000000000009",
+      1,
+      target,
+    );
+    const inventory = makeInventory([sourceSlot, targetSlot], []);
+
+    const result = moveItemWithResult(
+      inventory,
+      { container: "backpack", slotId: sourceSlot.id },
+      { container: "backpack", slotId: targetSlot.id },
+    );
+
+    expect(result.valid).toBe(false);
+    expect(result.moved).toBe(false);
+    expect(result.inventory.backpack[0].item?.quantity).toBe(source.quantity);
+    expect(result.inventory.backpack[1].item?.quantity).toBe(target.quantity);
   });
 });

@@ -1,6 +1,6 @@
 "use client";
 
-import type { CSSProperties, ReactNode } from "react";
+import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -10,6 +10,7 @@ import {
   useDroppable,
   useSensor,
   useSensors,
+  type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
@@ -21,13 +22,21 @@ export interface InventoryDragData {
   source: SlotPointer;
 }
 
+interface InventoryDropData {
+  slot: SlotPointer;
+}
+
 interface InventoryDndProviderProps {
   children: ReactNode;
 }
 
 export function InventoryDndProvider({ children }: InventoryDndProviderProps) {
   const draggedItem = useInventoryStore((state) => state.draggedItem);
+  const clearRejectedSlot = useInventoryStore((state) => state.clearRejectedSlot);
+  const moveItem = useInventoryStore((state) => state.moveItem);
+  const setRejectedSlot = useInventoryStore((state) => state.setRejectedSlot);
   const setDraggedItem = useInventoryStore((state) => state.setDraggedItem);
+  const rejectionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -35,6 +44,22 @@ export function InventoryDndProvider({ children }: InventoryDndProviderProps) {
       },
     }),
   );
+
+  useEffect(() => {
+    return () => {
+      if (rejectionTimer.current) {
+        clearTimeout(rejectionTimer.current);
+      }
+    };
+  }, []);
+
+  function restartRejectionTimer() {
+    if (rejectionTimer.current) {
+      clearTimeout(rejectionTimer.current);
+    }
+
+    rejectionTimer.current = setTimeout(clearRejectedSlot, 500);
+  }
 
   function handleDragStart(event: DragStartEvent) {
     const dragData = event.active.data.current;
@@ -47,8 +72,19 @@ export function InventoryDndProvider({ children }: InventoryDndProviderProps) {
     }
   }
 
-  function handleDragEnd() {
-    // Drop rules and inventory mutations are intentionally left for a later step.
+  function handleDragEnd(event: DragEndEvent) {
+    const dragData = event.active.data.current;
+    const dropData = event.over?.data.current;
+
+    if (isInventoryDragData(dragData) && isInventoryDropData(dropData)) {
+      const wasValidDrop = moveItem(dragData.source, dropData.slot);
+
+      if (!wasValidDrop) {
+        setRejectedSlot(dropData.slot, "Invalid drop");
+        restartRejectionTimer();
+      }
+    }
+
     setDraggedItem(null);
   }
 
@@ -87,6 +123,7 @@ export function InventoryDroppableSlot({
   role,
   slot,
 }: InventoryDroppableSlotProps) {
+  const rejectedSlot = useInventoryStore((state) => state.rejectedSlot);
   const { isOver, setNodeRef } = useDroppable({
     id: getSlotDndId(slot),
     data: {
@@ -97,7 +134,11 @@ export function InventoryDroppableSlot({
   return (
     <div
       aria-label={label}
-      className={`${className} ${isOver ? "ring-2 ring-emerald-300" : ""}`}
+      className={`${className} ${isOver ? "ring-2 ring-emerald-300" : ""} ${
+        isSameSlot(rejectedSlot?.slot ?? null, slot)
+          ? "animate-pulse ring-2 ring-red-400"
+          : ""
+      }`}
       ref={setNodeRef}
       role={role}
     >
@@ -168,6 +209,31 @@ function isInventoryDragData(value: unknown): value is InventoryDragData {
     value !== null &&
     "item" in value &&
     "source" in value
+  );
+}
+
+function isInventoryDropData(value: unknown): value is InventoryDropData {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "slot" in value &&
+    isSlotPointer((value as { slot: unknown }).slot)
+  );
+}
+
+function isSlotPointer(value: unknown): value is SlotPointer {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "container" in value &&
+    "slotId" in value
+  );
+}
+
+function isSameSlot(first: SlotPointer | null, second: SlotPointer): boolean {
+  return (
+    first?.container === second.container &&
+    first.slotId === second.slotId
   );
 }
 

@@ -8,6 +8,7 @@ import {
   canEquip,
   findValidEquipmentSlot,
   moveItem as moveInventoryItem,
+  moveItemWithResult,
   splitStack as splitInventoryStack,
   type InventoryCollections,
   type InventoryContainer,
@@ -54,7 +55,7 @@ export interface InventoryStoreState extends InventoryCollections {
   rejectedSlot: RejectionAnimationState | null;
   contextMenu: ContextMenuState | null;
   tooltip: TooltipState | null;
-  moveItem: (from: SlotPointer, to: SlotPointer) => void;
+  moveItem: (from: SlotPointer, to: SlotPointer) => boolean;
   equipItem: (from: SlotPointer, preferredSlotId?: UUID) => void;
   unequipItem: (equipmentSlotId: UUID, targetBackpackSlotId?: UUID) => void;
   splitStack: (
@@ -80,16 +81,21 @@ const initialInventory = (): InventoryCollections => ({
   hotbar: cloneSlots(starterHotbar),
 });
 
-export const useInventoryStore = create<InventoryStoreState>((set) => ({
+export const useInventoryStore = create<InventoryStoreState>((set, get) => ({
   ...initialInventory(),
   draggedItem: null,
   rejectedSlot: null,
   contextMenu: null,
   tooltip: null,
-  moveItem: (from, to) =>
-    set((state) => ({
-      ...moveInventoryItem(getInventoryCollections(state), from, to),
-    })),
+  moveItem: (from, to) => {
+    const result = moveItemWithResult(getInventoryCollections(get()), from, to);
+
+    if (result.moved) {
+      set({ ...result.inventory });
+    }
+
+    return result.valid;
+  },
   equipItem: (from, preferredSlotId) =>
     set((state) => {
       const sourceSlot = findSlot(state, from);

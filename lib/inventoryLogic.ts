@@ -30,6 +30,20 @@ export interface SplitStackResult {
   split: InventoryItem;
 }
 
+export type MoveFailureReason =
+  | "missing-source"
+  | "missing-target"
+  | "invalid-target"
+  | "invalid-swap"
+  | "full-stack";
+
+export interface MoveItemResult {
+  inventory: InventoryCollections;
+  moved: boolean;
+  valid: boolean;
+  reason?: MoveFailureReason;
+}
+
 type AnyInventorySlot = BackpackSlot | EquipmentSlot | HotbarSlot;
 
 const equipmentSlotTypesByItemType: Record<
@@ -126,46 +140,100 @@ export function moveItem(
   from: SlotReference,
   to: SlotReference,
 ): InventoryCollections {
+  return moveItemWithResult(inventory, from, to).inventory;
+}
+
+/** Moves an item and reports whether the attempted drop was valid. */
+export function moveItemWithResult(
+  inventory: InventoryCollections,
+  from: SlotReference,
+  to: SlotReference,
+): MoveItemResult {
   if (isSameSlot(from, to)) {
-    return inventory;
+    return { inventory, moved: false, valid: true };
   }
 
   const sourceSlot = findSlot(inventory, from);
   const targetSlot = findSlot(inventory, to);
 
-  if (!sourceSlot?.item || !targetSlot) {
-    return inventory;
+  if (!sourceSlot?.item) {
+    return {
+      inventory,
+      moved: false,
+      reason: "missing-source",
+      valid: false,
+    };
+  }
+
+  if (!targetSlot) {
+    return {
+      inventory,
+      moved: false,
+      reason: "missing-target",
+      valid: false,
+    };
   }
 
   if (!canPlaceItemInSlot(sourceSlot.item, targetSlot)) {
-    return inventory;
+    return {
+      inventory,
+      moved: false,
+      reason: "invalid-target",
+      valid: false,
+    };
   }
 
   if (targetSlot.item) {
     const merged = mergeStacks(sourceSlot.item, targetSlot.item);
 
     if (merged.target.quantity !== targetSlot.item.quantity) {
-      return updateSlots(inventory, [
-        { reference: from, item: merged.source },
-        { reference: to, item: merged.target },
-      ]);
+      return {
+        inventory: updateSlots(inventory, [
+          { reference: from, item: merged.source },
+          { reference: to, item: merged.target },
+        ]),
+        moved: true,
+        valid: true,
+      };
+    }
+
+    if (canMergeItems(sourceSlot.item, targetSlot.item)) {
+      return {
+        inventory,
+        moved: false,
+        reason: "full-stack",
+        valid: false,
+      };
     }
 
     if (!canPlaceItemInSlot(targetSlot.item, sourceSlot)) {
-      return inventory;
+      return {
+        inventory,
+        moved: false,
+        reason: "invalid-swap",
+        valid: false,
+      };
     }
 
     // Non-mergeable occupied slots become a replacement, returning the old item.
-    return updateSlots(inventory, [
-      { reference: from, item: targetSlot.item },
-      { reference: to, item: sourceSlot.item },
-    ]);
+    return {
+      inventory: updateSlots(inventory, [
+        { reference: from, item: targetSlot.item },
+        { reference: to, item: sourceSlot.item },
+      ]),
+      moved: true,
+      valid: true,
+    };
   }
 
-  return updateSlots(inventory, [
-    { reference: from, item: null },
-    { reference: to, item: sourceSlot.item },
-  ]);
+  return {
+    inventory: updateSlots(inventory, [
+      { reference: from, item: null },
+      { reference: to, item: sourceSlot.item },
+    ]),
+    moved: true,
+    valid: true,
+  };
 }
 
 /** Swaps two occupied or empty slots when both items are valid in their destinations. */
@@ -211,10 +279,16 @@ function canMergeStacks(
   target: InventoryItem,
 ): boolean {
   return (
+    canMergeItems(source, target) &&
+    target.quantity < target.maxStack
+  );
+}
+
+function canMergeItems(source: InventoryItem, target: InventoryItem): boolean {
+  return (
     source.id === target.id &&
     source.maxStack > 1 &&
-    target.maxStack > 1 &&
-    target.quantity < target.maxStack
+    target.maxStack > 1
   );
 }
 
