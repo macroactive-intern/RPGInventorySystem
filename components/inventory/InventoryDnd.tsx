@@ -34,6 +34,7 @@ export function InventoryDndProvider({ children }: InventoryDndProviderProps) {
   const draggedItem = useInventoryStore((state) => state.draggedItem);
   const clearRejectedSlot = useInventoryStore((state) => state.clearRejectedSlot);
   const moveItem = useInventoryStore((state) => state.moveItem);
+  const rejectedSlot = useInventoryStore((state) => state.rejectedSlot);
   const setRejectedSlot = useInventoryStore((state) => state.setRejectedSlot);
   const setDraggedItem = useInventoryStore((state) => state.setDraggedItem);
   const rejectionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -80,7 +81,12 @@ export function InventoryDndProvider({ children }: InventoryDndProviderProps) {
       const wasValidDrop = moveItem(dragData.source, dropData.slot);
 
       if (!wasValidDrop) {
-        setRejectedSlot(dropData.slot, "Invalid drop");
+        setRejectedSlot(
+          dropData.slot,
+          dropData.slot.container === "equipment"
+            ? "That item cannot be equipped there"
+            : "Invalid drop",
+        );
         restartRejectionTimer();
       }
     }
@@ -101,6 +107,9 @@ export function InventoryDndProvider({ children }: InventoryDndProviderProps) {
       sensors={sensors}
     >
       {children}
+      <div aria-live="polite" className="sr-only">
+        {rejectedSlot?.reason ?? ""}
+      </div>
       <DragOverlay>
         {draggedItem ? <DragItemPreview item={draggedItem.item} /> : null}
       </DragOverlay>
@@ -136,7 +145,7 @@ export function InventoryDroppableSlot({
       aria-label={label}
       className={`${className} ${isOver ? "ring-2 ring-emerald-300" : ""} ${
         isSameSlot(rejectedSlot?.slot ?? null, slot)
-          ? "animate-pulse ring-2 ring-red-400"
+          ? "animate-pulse ring-2 ring-red-400 shadow-[0_0_24px_rgba(248,113,113,0.6)]"
           : ""
       }`}
       ref={setNodeRef}

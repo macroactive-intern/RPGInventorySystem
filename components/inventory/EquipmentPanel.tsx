@@ -116,6 +116,7 @@ interface EquipmentSlotCardProps {
 }
 
 function EquipmentSlotCard({ definition, slot }: EquipmentSlotCardProps) {
+  const rejectedSlot = useInventoryStore((state) => state.rejectedSlot);
   const item = slot?.item ?? null;
   const borderClass = item
     ? rarityBorderClasses[item.rarity]
@@ -124,10 +125,13 @@ function EquipmentSlotCard({ definition, slot }: EquipmentSlotCardProps) {
     container: "equipment" as const,
     slotId: slot?.id ?? `missing-equipment-slot-${definition.label}`,
   };
+  const isRejected = isSameSlot(rejectedSlot?.slot ?? null, slotPointer);
 
   return (
     <InventoryDroppableSlot
-      className={`relative z-10 min-h-28 rounded-md border bg-slate-950/90 p-3 transition-shadow ${borderClass} ${definition.className}`}
+      className={`relative z-10 min-h-28 rounded-md border bg-slate-950/90 p-3 transition-shadow ${borderClass} ${
+        isRejected ? "bg-red-950/20" : ""
+      } ${definition.className}`}
       label={
         item
           ? `${definition.label}: ${item.name}`
@@ -166,6 +170,15 @@ function EquipmentSlotCard({ definition, slot }: EquipmentSlotCardProps) {
             Empty
           </div>
         )}
+
+        {isRejected ? (
+          <div
+            className="rounded bg-red-950/80 px-2 py-1 text-xs font-semibold text-red-100"
+            role="status"
+          >
+            {rejectedSlot?.reason ?? "Invalid drop"}
+          </div>
+        ) : null}
       </div>
     </InventoryDroppableSlot>
   );
@@ -195,6 +208,13 @@ function findEquipmentSlot(
   const occurrence = definition.occurrence ?? 0;
 
   return matchingSlots[occurrence] ?? null;
+}
+
+function isSameSlot(
+  first: { container: string; slotId: string } | null,
+  second: { container: string; slotId: string },
+): boolean {
+  return first?.container === second.container && first.slotId === second.slotId;
 }
 
 function getIconPlaceholder(item: InventoryItem): string {
