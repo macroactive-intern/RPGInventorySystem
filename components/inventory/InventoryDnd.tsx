@@ -18,8 +18,12 @@ import {
   useDroppable,
   useSensor,
   useSensors,
+  type Active,
+  type Announcements,
   type DragEndEvent,
   type DragStartEvent,
+  type Over,
+  type ScreenReaderInstructions,
 } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { ContextMenu } from "@/components/inventory/ContextMenu";
@@ -47,6 +51,52 @@ interface InventoryDropData {
 interface InventoryDndProviderProps {
   children: ReactNode;
 }
+
+const inventoryScreenReaderInstructions: ScreenReaderInstructions = {
+  draggable:
+    "To pick up an inventory item, press Space or Enter. Use the arrow keys to move between inventory slots. Press Space or Enter again to drop the item, or Escape to cancel.",
+};
+
+const inventoryAnnouncements: Announcements = {
+  onDragStart({ active }) {
+    const dragData = getInventoryDragData(active);
+
+    return dragData
+      ? `Picked up ${dragData.item.name} from ${formatSlotLabel(dragData.source)}.`
+      : "Picked up inventory item.";
+  },
+  onDragOver({ active, over }) {
+    const dragData = getInventoryDragData(active);
+    const dropData = getInventoryDropData(over);
+
+    if (!dragData) {
+      return undefined;
+    }
+
+    return dropData
+      ? `${dragData.item.name} is over ${formatSlotLabel(dropData.slot)}.`
+      : `${dragData.item.name} is not over a valid inventory slot.`;
+  },
+  onDragEnd({ active, over }) {
+    const dragData = getInventoryDragData(active);
+    const dropData = getInventoryDropData(over);
+
+    if (!dragData) {
+      return "Inventory item released.";
+    }
+
+    return dropData
+      ? `Released ${dragData.item.name} over ${formatSlotLabel(dropData.slot)}.`
+      : `${dragData.item.name} returned to ${formatSlotLabel(dragData.source)}.`;
+  },
+  onDragCancel({ active }) {
+    const dragData = getInventoryDragData(active);
+
+    return dragData
+      ? `Cancelled dragging ${dragData.item.name}. It returned to ${formatSlotLabel(dragData.source)}.`
+      : "Cancelled inventory drag.";
+  },
+};
 
 export function InventoryDndProvider({ children }: InventoryDndProviderProps) {
   const draggedItem = useInventoryStore((state) => state.draggedItem);
@@ -129,6 +179,10 @@ export function InventoryDndProvider({ children }: InventoryDndProviderProps) {
   return (
     <TooltipPositionProvider>
       <DndContext
+        accessibility={{
+          announcements: inventoryAnnouncements,
+          screenReaderInstructions: inventoryScreenReaderInstructions,
+        }}
         collisionDetection={closestCenter}
         onDragCancel={handleDragCancel}
         onDragEnd={handleDragEnd}
@@ -215,6 +269,9 @@ export function DraggableInventoryItem({
         item,
         source,
       } satisfies InventoryDragData,
+      attributes: {
+        roleDescription: "draggable inventory item",
+      },
     });
   const style: CSSProperties = {
     transform: CSS.Translate.toString(transform),
@@ -247,6 +304,7 @@ export function DraggableInventoryItem({
 
   return (
     <div
+      aria-label={`${item.name}, ${source.container} item. Press Space or Enter to pick up, arrow keys to move, and Space or Enter to drop.`}
       className={`${className} ${isDragging ? "opacity-40" : ""}`}
       onContextMenu={handleContextMenu}
       onPointerEnter={showTooltip}
@@ -287,6 +345,29 @@ function isSlotPointer(value: unknown): value is SlotPointer {
     "container" in value &&
     "slotId" in value
   );
+}
+
+function getInventoryDragData(active: Active): InventoryDragData | null {
+  const dragData = active.data.current;
+
+  return isInventoryDragData(dragData) ? dragData : null;
+}
+
+function getInventoryDropData(over: Over | null): InventoryDropData | null {
+  const dropData = over?.data.current;
+
+  return isInventoryDropData(dropData) ? dropData : null;
+}
+
+function formatSlotLabel(slot: SlotPointer): string {
+  const containerLabel =
+    slot.container === "backpack"
+      ? "backpack"
+      : slot.container === "equipment"
+        ? "equipment"
+        : "hotbar";
+
+  return `${containerLabel} slot`;
 }
 
 function getSlotDndId(slot: SlotPointer): string {
