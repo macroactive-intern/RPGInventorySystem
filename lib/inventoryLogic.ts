@@ -144,17 +144,21 @@ export function moveItem(
   if (targetSlot.item) {
     const merged = mergeStacks(sourceSlot.item, targetSlot.item);
 
-    // If nothing moved, the target was incompatible or already full.
-    if (
-      merged.source?.quantity === sourceSlot.item.quantity &&
-      merged.target.quantity === targetSlot.item.quantity
-    ) {
+    if (merged.target.quantity !== targetSlot.item.quantity) {
+      return updateSlots(inventory, [
+        { reference: from, item: merged.source },
+        { reference: to, item: merged.target },
+      ]);
+    }
+
+    if (!canPlaceItemInSlot(targetSlot.item, sourceSlot)) {
       return inventory;
     }
 
+    // Non-mergeable occupied slots become a replacement, returning the old item.
     return updateSlots(inventory, [
-      { reference: from, item: merged.source },
-      { reference: to, item: merged.target },
+      { reference: from, item: targetSlot.item },
+      { reference: to, item: sourceSlot.item },
     ]);
   }
 
