@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  type CSSProperties,
+  type PointerEvent,
+  type ReactNode,
+} from "react";
 import {
   DndContext,
   DragOverlay,
@@ -15,6 +21,7 @@ import {
 } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { DragOverlayItem } from "@/components/inventory/DragOverlayItem";
+import { ItemTooltip } from "@/components/inventory/ItemTooltip";
 import { useInventoryStore, type SlotPointer } from "@/store/inventoryStore";
 import type { InventoryItem } from "@/types/inventory";
 
@@ -38,6 +45,7 @@ export function InventoryDndProvider({ children }: InventoryDndProviderProps) {
   const rejectedSlot = useInventoryStore((state) => state.rejectedSlot);
   const setRejectedSlot = useInventoryStore((state) => state.setRejectedSlot);
   const setDraggedItem = useInventoryStore((state) => state.setDraggedItem);
+  const setTooltip = useInventoryStore((state) => state.setTooltip);
   const rejectionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -67,6 +75,7 @@ export function InventoryDndProvider({ children }: InventoryDndProviderProps) {
     const dragData = event.active.data.current;
 
     if (isInventoryDragData(dragData)) {
+      setTooltip(null);
       setDraggedItem({
         item: dragData.item,
         source: dragData.source,
@@ -93,10 +102,12 @@ export function InventoryDndProvider({ children }: InventoryDndProviderProps) {
     }
 
     setDraggedItem(null);
+    setTooltip(null);
   }
 
   function handleDragCancel() {
     setDraggedItem(null);
+    setTooltip(null);
   }
 
   return (
@@ -114,6 +125,7 @@ export function InventoryDndProvider({ children }: InventoryDndProviderProps) {
       <DragOverlay>
         {draggedItem ? <DragOverlayItem item={draggedItem.item} /> : null}
       </DragOverlay>
+      <ItemTooltip />
     </DndContext>
   );
 }
@@ -170,6 +182,7 @@ export function DraggableInventoryItem({
   item,
   source,
 }: DraggableInventoryItemProps) {
+  const setTooltip = useInventoryStore((state) => state.setTooltip);
   const { attributes, isDragging, listeners, setNodeRef, transform } =
     useDraggable({
       id: getItemDndId(source),
@@ -181,10 +194,21 @@ export function DraggableInventoryItem({
   const style: CSSProperties = {
     transform: CSS.Translate.toString(transform),
   };
+  const showTooltip = (event: PointerEvent<HTMLDivElement>) => {
+    setTooltip({
+      item,
+      slot: source,
+      x: event.clientX,
+      y: event.clientY,
+    });
+  };
 
   return (
     <div
       className={`${className} ${isDragging ? "opacity-40" : ""}`}
+      onPointerEnter={showTooltip}
+      onPointerLeave={() => setTooltip(null)}
+      onPointerMove={showTooltip}
       ref={setNodeRef}
       style={style}
       {...listeners}
