@@ -55,10 +55,16 @@ export interface SplitStackModalState {
   slot: SlotPointer;
 }
 
+export interface ItemInspectionModalState {
+  item: InventoryItem;
+  slot: SlotPointer;
+}
+
 export interface InventoryStoreState extends InventoryCollections {
   draggedItem: DraggedItemMetadata | null;
   rejectedSlot: RejectionAnimationState | null;
   contextMenu: ContextMenuState | null;
+  itemInspectionModal: ItemInspectionModalState | null;
   splitStackModal: SplitStackModalState | null;
   tooltip: TooltipState | null;
   moveItem: (from: SlotPointer, to: SlotPointer) => boolean;
@@ -75,6 +81,8 @@ export interface InventoryStoreState extends InventoryCollections {
     position: { x: number; y: number },
   ) => void;
   closeContextMenu: () => void;
+  openItemInspectionModal: (slot: SlotPointer) => void;
+  closeItemInspectionModal: () => void;
   openSplitStackModal: (slot: SlotPointer) => void;
   closeSplitStackModal: () => void;
   setRejectedSlot: (slot: SlotPointer, reason?: string) => void;
@@ -94,6 +102,7 @@ export const useInventoryStore = create<InventoryStoreState>((set, get) => ({
   draggedItem: null,
   rejectedSlot: null,
   contextMenu: null,
+  itemInspectionModal: null,
   splitStackModal: null,
   tooltip: null,
   moveItem: (from, to) => {
@@ -210,6 +219,22 @@ export const useInventoryStore = create<InventoryStoreState>((set, get) => ({
       };
     }),
   closeContextMenu: () => set({ contextMenu: null }),
+  openItemInspectionModal: (slot) =>
+    set((state) => {
+      const targetSlot = findSlot(state, slot);
+
+      if (!targetSlot?.item) {
+        return { itemInspectionModal: null };
+      }
+
+      return {
+        itemInspectionModal: {
+          item: targetSlot.item,
+          slot,
+        },
+      };
+    }),
+  closeItemInspectionModal: () => set({ itemInspectionModal: null }),
   openSplitStackModal: (slot) =>
     set((state) => {
       const targetSlot = findSlot(state, slot);

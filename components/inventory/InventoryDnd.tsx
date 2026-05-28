@@ -23,6 +23,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { ContextMenu } from "@/components/inventory/ContextMenu";
 import { DragOverlayItem } from "@/components/inventory/DragOverlayItem";
+import { ItemInspectionModal } from "@/components/inventory/ItemInspectionModal";
 import { ItemTooltip } from "@/components/inventory/ItemTooltip";
 import { SplitStackModal } from "@/components/inventory/SplitStackModal";
 import { useInventoryStore, type SlotPointer } from "@/store/inventoryStore";
@@ -129,6 +130,7 @@ export function InventoryDndProvider({ children }: InventoryDndProviderProps) {
         {draggedItem ? <DragOverlayItem item={draggedItem.item} /> : null}
       </DragOverlay>
       <ContextMenu />
+      <ItemInspectionModal />
       <SplitStackModal />
       <ItemTooltip />
     </DndContext>

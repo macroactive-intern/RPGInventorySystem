@@ -21,11 +21,13 @@ export function ContextMenu() {
   const contextMenu = useInventoryStore((state) => state.contextMenu);
   const equipment = useInventoryStore((state) => state.equipment);
   const equipItem = useInventoryStore((state) => state.equipItem);
+  const openItemInspectionModal = useInventoryStore(
+    (state) => state.openItemInspectionModal,
+  );
   const openSplitStackModal = useInventoryStore(
     (state) => state.openSplitStackModal,
   );
   const removeItem = useInventoryStore((state) => state.removeItem);
-  const setTooltip = useInventoryStore((state) => state.setTooltip);
   const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -65,12 +67,7 @@ export function ContextMenu() {
       {
         label: "Inspect",
         onSelect: () => {
-          setTooltip({
-            item: contextMenu.item,
-            slot: contextMenu.slot,
-            x: contextMenu.x,
-            y: contextMenu.y,
-          });
+          openItemInspectionModal(contextMenu.slot);
           closeContextMenu();
         },
       },
@@ -80,9 +77,9 @@ export function ContextMenu() {
     contextMenu,
     equipment,
     equipItem,
+    openItemInspectionModal,
     openSplitStackModal,
     removeItem,
-    setTooltip,
   ]);
 
   useEffect(() => {
