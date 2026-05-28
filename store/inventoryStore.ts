@@ -133,13 +133,11 @@ export const useInventoryStore = create<InventoryStoreState>((set, get) => ({
         return {};
       }
 
-      const preferredSlot = preferredSlotId
-        ? state.equipment.find((slot) => slot.id === preferredSlotId)
-        : null;
-      const targetSlot =
-        preferredSlot && findValidEquipmentSlot(sourceSlot.item, [preferredSlot])
-          ? preferredSlot
-          : findValidEquipmentSlot(sourceSlot.item, state.equipment);
+      const targetSlot = findEquipmentSlotForEquip(
+        sourceSlot.item,
+        state.equipment,
+        preferredSlotId,
+      );
 
       if (!targetSlot) {
         return {};
@@ -370,6 +368,26 @@ function findSlot(
 
 function isEquipmentSlot(slot: InventorySlot): slot is EquipmentSlot {
   return "type" in slot;
+}
+
+function findEquipmentSlotForEquip(
+  item: InventoryItem,
+  equipment: readonly EquipmentSlot[],
+  preferredSlotId?: UUID,
+): EquipmentSlot | null {
+  const preferredSlot = preferredSlotId
+    ? equipment.find((slot) => slot.id === preferredSlotId)
+    : null;
+
+  if (preferredSlot && canEquip(item, preferredSlot)) {
+    return preferredSlot;
+  }
+
+  const emptyCompatibleSlot = equipment.find(
+    (slot) => slot.item === null && canEquip(item, slot),
+  );
+
+  return emptyCompatibleSlot ?? findValidEquipmentSlot(item, equipment);
 }
 
 function createRuntimeUuid(): UUID {
