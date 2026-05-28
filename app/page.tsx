@@ -1,4 +1,5 @@
 import { BackpackGrid } from "@/components/inventory/BackpackGrid";
+import { CraftingPanel } from "@/components/inventory/CraftingPanel";
 import { EquipmentPanel } from "@/components/inventory/EquipmentPanel";
 import { Hotbar } from "@/components/inventory/Hotbar";
 import { InventoryDndProvider } from "@/components/inventory/InventoryDnd";
@@ -30,9 +31,12 @@ export default function Home() {
               <EquipmentPanel />
               <WeightPanel />
             </aside>
-            <section className="rounded-lg border border-slate-800 bg-slate-900/80 p-5 shadow-2xl shadow-black/30">
-              <BackpackGrid />
-            </section>
+            <div className="flex flex-col gap-5">
+              <section className="rounded-lg border border-slate-800 bg-slate-900/80 p-5 shadow-2xl shadow-black/30">
+                <BackpackGrid />
+              </section>
+              <CraftingPanel />
+            </div>
           </div>
           <Hotbar />
         </InventoryDndProvider>

@@ -6,6 +6,7 @@ import { craftItem } from "./craftingLogic";
 import type { InventoryCollections } from "./inventoryLogic";
 
 const ironSwordRecipe = craftingRecipes[0];
+const backpackRecipe = craftingRecipes[1];
 
 const makeItem = (
   template: InventoryItem,
@@ -125,5 +126,28 @@ describe("craftingLogic", () => {
     expect(result.inventory).toBe(inventory);
     expect(inventory.backpack[0].item?.quantity).toBe(4);
     expect(inventory.backpack[1].item?.quantity).toBe(2);
+  });
+
+  it("crafts a backpack from cured hide and thread", () => {
+    const hide = makeItem(itemTemplates.wolfPelt, { quantity: 3 });
+    const thread = makeItem(itemTemplates.moonlitThread, { quantity: 5 });
+    const inventory = makeInventory([
+      makeBackpackSlot("slot-1", 0, hide),
+      makeBackpackSlot("slot-2", 1, thread),
+      makeBackpackSlot("slot-3", 2, null),
+    ]);
+
+    const result = craftItem(
+      inventory,
+      backpackRecipe,
+      "10000000-0000-4000-8000-000000000107",
+    );
+
+    expect(result.crafted).toBe(true);
+    expect(result.inventory.backpack[0].item?.quantity).toBe(1);
+    expect(result.inventory.backpack[1].item?.quantity).toBe(2);
+    expect(result.inventory.backpack[2].item?.name).toBe(
+      "Stitched Trail Backpack",
+    );
   });
 });

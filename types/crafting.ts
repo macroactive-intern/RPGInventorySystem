@@ -2,6 +2,7 @@ import type { InventoryItem, UUID } from "@/types/inventory";
 
 /** Ingredient requirement matched by item template identity, not stack instance id. */
 export interface CraftingIngredient {
+  label: string;
   templateId: UUID;
   quantity: number;
 }

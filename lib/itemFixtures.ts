@@ -121,6 +121,21 @@ const garnetRing: InventoryItem = {
   allowedSlots: ["ring"],
 };
 
+const stitchedBackpack: InventoryItem = {
+  id: "2edbe0a5-fb9c-4898-a619-91fbe62e48ed",
+  name: "Stitched Trail Backpack",
+  description: "A reinforced pack sewn from cured hide and moonlit thread.",
+  type: "accessory",
+  rarity: "uncommon",
+  stats: {
+    vitality: 1,
+  },
+  weight: 1.1,
+  maxStack: 1,
+  quantity: 1,
+  allowedSlots: ["back"],
+};
+
 const minorHealingPotion: InventoryItem = {
   id: "ba8c4d7c-0f2d-4f2c-9de8-8210c795f9c8",
   name: "Minor Healing Potion",
@@ -246,7 +261,10 @@ const starterBackpackItems: Record<number, InventoryItem> = {
 export const itemTemplates = {
   ironOre,
   ironSword,
+  moonlitThread,
+  stitchedBackpack,
   wood,
+  wolfPelt,
 } as const;
 
 export const starterBackpack: readonly BackpackSlot[] = backpackSlotIds.map(
