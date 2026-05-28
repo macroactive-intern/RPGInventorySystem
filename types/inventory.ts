@@ -44,6 +44,8 @@ export interface ItemStats {
   damageMax?: number;
   criticalChance?: number;
   criticalDamage?: number;
+  healthRestore?: number;
+  manaRestore?: number;
 }
 
 /** Core item record stored in inventory, equipment, or hotbar slots. */
@@ -55,6 +57,7 @@ export interface InventoryItem {
   rarity: Rarity;
   iconUrl?: string;
   stats?: ItemStats;
+  weight: number;
   maxStack: number;
   quantity: number;
   allowedSlots?: readonly SlotType[];
