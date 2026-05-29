@@ -13,11 +13,10 @@ import {
   InventoryDroppableSlot,
 } from "@/components/inventory/InventoryDnd";
 
-const SLOT_COUNT = 30;
-
 export function BackpackGrid() {
   const backpack = useInventoryStore((state) => state.backpack);
-  const slots = Array.from({ length: SLOT_COUNT }, (_, index) => {
+  const slotCount = backpack.length;
+  const slots = Array.from({ length: slotCount }, (_, index) => {
     return backpack.find((slot) => slot.index === index) ?? null;
   });
 
@@ -32,12 +31,12 @@ export function BackpackGrid() {
             Backpack
           </h2>
           <p className="mt-1 text-sm text-slate-400">
-            {backpack.filter((slot) => slot.item).length} / {SLOT_COUNT} slots
+            {backpack.filter((slot) => slot.item).length} / {slotCount} slots
             filled
           </p>
         </div>
         <div className="rounded-md border border-slate-700 px-3 py-2 text-sm text-slate-300">
-          30 slots
+          {slotCount} slots
         </div>
       </div>
 

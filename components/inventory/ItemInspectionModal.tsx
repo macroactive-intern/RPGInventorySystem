@@ -77,6 +77,7 @@ function ItemInspectionDialog({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+      onClick={closeItemInspectionModal}
       onKeyDown={handleKeyDown}
       role="presentation"
     >
@@ -86,6 +87,7 @@ function ItemInspectionDialog({
         className={`w-full max-w-lg rounded-lg border bg-slate-950 p-5 shadow-2xl shadow-black/60 ${
           rarityClasses[item.rarity]
         }`}
+        onClick={(event) => event.stopPropagation()}
         role="dialog"
       >
         <div className="flex items-start justify-between gap-4 border-b border-slate-800 pb-4">

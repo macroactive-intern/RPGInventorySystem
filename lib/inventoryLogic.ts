@@ -400,6 +400,16 @@ function updateSlots(
   };
 }
 
+export function applySlotUpdates(
+  inventory: InventoryCollections,
+  updates: readonly { slot: SlotReference; item: InventoryItem | null }[],
+): InventoryCollections {
+  return updateSlots(
+    inventory,
+    updates.map((u) => ({ reference: u.slot, item: u.item })),
+  );
+}
+
 function updateContainer<TSlot extends AnyInventorySlot>(
   slots: readonly TSlot[],
   container: InventoryContainer,

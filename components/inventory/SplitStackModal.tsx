@@ -107,10 +107,14 @@ function SplitStackDialog({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4"
+      onClick={closeSplitStackModal}
+    >
       <form
         aria-labelledby="split-stack-heading"
         className="w-full max-w-sm rounded-lg border border-slate-700 bg-slate-950 p-5 shadow-2xl shadow-black/60"
+        onClick={(event) => event.stopPropagation()}
         onKeyDown={handleKeyDown}
         onSubmit={handleSubmit}
       >
