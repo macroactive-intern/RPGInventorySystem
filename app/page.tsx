@@ -1,6 +1,7 @@
 import { BackpackGrid } from "@/components/inventory/BackpackGrid";
 import { CraftingPanel } from "@/components/inventory/CraftingPanel";
 import { EquipmentPanel } from "@/components/inventory/EquipmentPanel";
+import { TradePanel } from "@/components/inventory/TradePanel";
 import { Hotbar } from "@/components/inventory/Hotbar";
 import { InventoryDndProvider } from "@/components/inventory/InventoryDnd";
 import { InventorySearch } from "@/components/inventory/InventorySearch";
@@ -38,6 +39,7 @@ export default function Home() {
                 <BackpackGrid />
               </section>
               <CraftingPanel />
+              <TradePanel />
             </div>
           </div>
           <Hotbar />

@@ -20,7 +20,7 @@ export interface TradeStoreState {
   acceptOffer: () => void;
   rejectOffer: () => void;
   cancelOffer: () => void;
-  completeAcceptedTrade: () => void;
+  completeAcceptedTrade: (currentInventory: InventoryCollections) => InventoryCollections | null;
   resetTrade: () => void;
 }
 
@@ -47,6 +47,7 @@ export const useTradeStore = create<TradeStoreState>((set, get) => ({
     if (!offer || offer.status !== "pending") return;
 
     const key = side === "initiator" ? "initiatorItems" : "recipientItems";
+    if (offer[key].some((i) => i.id === item.id)) return;
     set({ offer: { ...offer, [key]: [...offer[key], item] } });
   },
 
@@ -83,33 +84,25 @@ export const useTradeStore = create<TradeStoreState>((set, get) => ({
 
   cancelOffer: () => {
     const { offer } = get();
-    if (
-      !offer ||
-      (offer.status !== "pending" && offer.status !== "offered")
-    ) {
-      return;
-    }
+    if (!offer || (offer.status !== "pending" && offer.status !== "offered")) return;
     set({ offer: { ...offer, status: "cancelled" } });
   },
 
-  completeAcceptedTrade: () => {
-    const { offer, initiatorInventory, recipientInventory } = get();
-    if (!offer || !initiatorInventory || !recipientInventory) return;
+  completeAcceptedTrade: (currentInventory) => {
+    const { offer, recipientInventory } = get();
+    if (!offer || !recipientInventory) return null;
+    if (offer.status !== "accepted") return null;
 
-    // Status guard prevents double-completion: after the first successful
-    // call, offer.status becomes "completed" and this check fails.
-    if (offer.status !== "accepted") return;
+    const result = completeTrade(offer, currentInventory, recipientInventory);
+    if (!result) return null;
 
-    const result = completeTrade(offer, initiatorInventory, recipientInventory);
-    if (!result) return;
-
-    // Both inventory updates and the offer status change are applied in one
-    // Zustand set() call — neither side is ever partially updated.
     set({
       initiatorInventory: result.initiator,
       recipientInventory: result.recipient,
       offer: result.offer,
     });
+
+    return result.initiator;
   },
 
   resetTrade: () =>

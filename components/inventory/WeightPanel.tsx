@@ -1,14 +1,17 @@
 "use client";
 
+import { memo } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { calculateWeight } from "@/lib/inventoryLogic";
 import { useInventoryStore } from "@/store/inventoryStore";
 
 const MAX_WEIGHT_KG = 20;
 const WARNING_WEIGHT_KG = 15;
 
-export function WeightPanel() {
-  const backpack = useInventoryStore((state) => state.backpack);
-  const equipment = useInventoryStore((state) => state.equipment);
+function WeightPanel() {
+  const { backpack, equipment } = useInventoryStore(
+    useShallow((state) => ({ backpack: state.backpack, equipment: state.equipment })),
+  );
   const currentWeight = calculateWeight(backpack, equipment);
   const percentage = Math.min((currentWeight / MAX_WEIGHT_KG) * 100, 100);
   const isEncumbered = currentWeight > MAX_WEIGHT_KG;
@@ -126,3 +129,6 @@ function getSpeedPercent(weight: number): number {
 function formatWeight(weight: number): string {
   return `${weight.toFixed(1)}kg`;
 }
+
+const _WeightPanel = memo(WeightPanel);
+export { _WeightPanel as WeightPanel };

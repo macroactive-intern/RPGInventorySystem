@@ -1,7 +1,6 @@
 import type { InventoryItem, UUID } from "@/types/inventory";
 
 export type TradeStatus =
-  | "idle"
   | "pending"
   | "offered"
   | "accepted"

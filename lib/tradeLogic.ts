@@ -42,6 +42,8 @@ export function validateTradeOffer(
   inventory: InventoryCollections,
   offeredItems: readonly InventoryItem[],
 ): TradeValidationResult {
+  if (offeredItems.length === 0) return { valid: true };
+
   const allSlots = [
     ...inventory.backpack,
     ...inventory.equipment,
@@ -158,6 +160,12 @@ function buildDeductions(
     remaining -= quantity;
   }
 
+  if (remaining > 0) {
+    throw new Error(
+      `buildDeductions: cannot deduct ${totalToDeduct} of ${templateId} — only ${totalToDeduct - remaining} available`,
+    );
+  }
+
   return deductions;
 }
 
@@ -167,8 +175,11 @@ function applyDeductions(
 ): InventoryCollections {
   if (deductions.length === 0) return inventory;
 
-  const applyToSlots = <T extends AnySlot>(slots: readonly T[]): readonly T[] =>
-    slots.map((slot) => {
+  const deductionIds = new Set(deductions.map((d) => d.slotId));
+
+  const applyToSlots = <T extends AnySlot>(slots: readonly T[]): readonly T[] => {
+    if (!slots.some((slot) => deductionIds.has(slot.id))) return slots;
+    return slots.map((slot) => {
       const deduction = deductions.find((d) => d.slotId === slot.id);
       if (!deduction || !slot.item) return slot;
 
@@ -178,6 +189,7 @@ function applyDeductions(
         item: newQuantity > 0 ? { ...slot.item, quantity: newQuantity } : null,
       } as T;
     });
+  };
 
   return {
     backpack: applyToSlots(inventory.backpack),
@@ -205,6 +217,8 @@ function addSingleItemToBackpack(
   inventory: InventoryCollections,
   item: InventoryItem,
 ): InventoryCollections | null {
+  if (item.maxStack <= 0) return null;
+
   const templateId = getTemplateId(item);
   let backpack = mergeIntoExistingBackpackStacks(inventory.backpack, item);
 
