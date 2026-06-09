@@ -309,11 +309,11 @@ describe("tradeLogic", () => {
 
       expect(result).not.toBeNull();
       // Initiator gave the sword and received 3 potions
-      expect(totalQuantity(result!.initiatorInventory, SWORD_ID)).toBe(0);
-      expect(totalQuantity(result!.initiatorInventory, POTION_ID)).toBe(3);
+      expect(totalQuantity(result!.initiator, SWORD_ID)).toBe(0);
+      expect(totalQuantity(result!.initiator, POTION_ID)).toBe(3);
       // Recipient gave 3 potions and received the sword
-      expect(totalQuantity(result!.recipientInventory, POTION_ID)).toBe(2);
-      expect(totalQuantity(result!.recipientInventory, SWORD_ID)).toBe(1);
+      expect(totalQuantity(result!.recipient, POTION_ID)).toBe(2);
+      expect(totalQuantity(result!.recipient, SWORD_ID)).toBe(1);
     });
 
     it("conserves total item quantity across both inventories after trade", () => {
@@ -354,16 +354,16 @@ describe("tradeLogic", () => {
         totalQuantity(initiatorInventory, SWORD_ID) +
         totalQuantity(recipientInventory, SWORD_ID);
       const swordsAfter =
-        totalQuantity(result!.initiatorInventory, SWORD_ID) +
-        totalQuantity(result!.recipientInventory, SWORD_ID);
+        totalQuantity(result!.initiator, SWORD_ID) +
+        totalQuantity(result!.recipient, SWORD_ID);
       expect(swordsAfter).toBe(swordsBefore);
 
       const potionsBefore =
         totalQuantity(initiatorInventory, POTION_ID) +
         totalQuantity(recipientInventory, POTION_ID);
       const potionsAfter =
-        totalQuantity(result!.initiatorInventory, POTION_ID) +
-        totalQuantity(result!.recipientInventory, POTION_ID);
+        totalQuantity(result!.initiator, POTION_ID) +
+        totalQuantity(result!.recipient, POTION_ID);
       expect(potionsAfter).toBe(potionsBefore);
     });
 
@@ -465,22 +465,21 @@ describe("tradeLogic", () => {
       const result = completeTrade(offer, initiatorInventory, recipientInventory);
       expect(result).not.toBeNull();
 
-      // Simulate caller marking the offer completed after the first success
-      const completedOffer: TradeOffer = { ...offer, status: "completed" };
+      // Use the completed offer returned by the first call — status is already "completed"
       const secondResult = completeTrade(
-        completedOffer,
-        result!.initiatorInventory,
-        result!.recipientInventory,
+        result!.offer,
+        result!.initiator,
+        result!.recipient,
       );
 
       // Status guard must block the second completion
       expect(secondResult).toBeNull();
 
       // Item counts after the single completed trade are exactly right
-      expect(totalQuantity(result!.initiatorInventory, SWORD_ID)).toBe(0);
-      expect(totalQuantity(result!.initiatorInventory, POTION_ID)).toBe(3);
-      expect(totalQuantity(result!.recipientInventory, SWORD_ID)).toBe(1);
-      expect(totalQuantity(result!.recipientInventory, POTION_ID)).toBe(2);
+      expect(totalQuantity(result!.initiator, SWORD_ID)).toBe(0);
+      expect(totalQuantity(result!.initiator, POTION_ID)).toBe(3);
+      expect(totalQuantity(result!.recipient, SWORD_ID)).toBe(1);
+      expect(totalQuantity(result!.recipient, POTION_ID)).toBe(2);
     });
 
     it("produces the same final state when the store completion action is dispatched twice", () => {
@@ -520,23 +519,23 @@ describe("tradeLogic", () => {
 
       const firstResult = completeTrade(activeOffer, activeInitiator, activeRecipient);
       if (firstResult) {
-        activeInitiator = firstResult.initiatorInventory;
-        activeRecipient = firstResult.recipientInventory;
-        activeOffer = { ...activeOffer, status: "completed" };
+        activeInitiator = firstResult.initiator;
+        activeRecipient = firstResult.recipient;
+        activeOffer = firstResult.offer; // status: "completed", completedAt set
       }
 
       // Simulate the second store dispatch
       const secondResult = completeTrade(activeOffer, activeInitiator, activeRecipient);
       if (secondResult) {
-        activeInitiator = secondResult.initiatorInventory;
-        activeRecipient = secondResult.recipientInventory;
+        activeInitiator = secondResult.initiator;
+        activeRecipient = secondResult.recipient;
       }
 
       // Second dispatch must be a no-op
       expect(secondResult).toBeNull();
       // Final inventories are the same object references as after the first dispatch
-      expect(activeInitiator).toBe(firstResult?.initiatorInventory);
-      expect(activeRecipient).toBe(firstResult?.recipientInventory);
+      expect(activeInitiator).toBe(firstResult?.initiator);
+      expect(activeRecipient).toBe(firstResult?.recipient);
     });
   });
 });
