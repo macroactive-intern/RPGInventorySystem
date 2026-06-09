@@ -10,7 +10,6 @@ import type { InventoryCollections } from "@/lib/inventoryLogic";
 import {
   completeTrade,
   validateTradeOffer,
-  type TradeItem,
   type TradeOffer,
 } from "./tradeLogic";
 
@@ -51,16 +50,12 @@ const makeInventory = (
   hotbar: readonly HotbarSlot[] = [],
 ): InventoryCollections => ({ backpack, equipment, hotbar });
 
-const makeTradeItem = (templateId: string, quantity: number): TradeItem => ({
-  templateId,
-  quantity,
-});
-
 const makeTradeOffer = (overrides: Partial<TradeOffer> = {}): TradeOffer => ({
   id: "b0000000-0000-4000-8000-000000000001",
   status: "accepted",
   initiatorItems: [],
   recipientItems: [],
+  createdAt: 0,
   ...overrides,
 });
 
@@ -104,7 +99,7 @@ describe("tradeLogic", () => {
         makeBackpackSlot("c0000000-0000-4000-8000-000000000001", 0, sword),
       ]);
 
-      const result = validateTradeOffer(inventory, [makeTradeItem(SWORD_ID, 1)]);
+      const result = validateTradeOffer(inventory, [sword]);
 
       expect(result.valid).toBe(true);
     });
@@ -122,7 +117,7 @@ describe("tradeLogic", () => {
         [makeEquipmentSlot("d0000000-0000-4000-8000-000000000001", "head", helmet)],
       );
 
-      const result = validateTradeOffer(inventory, [makeTradeItem(HELMET_ID, 1)]);
+      const result = validateTradeOffer(inventory, [helmet]);
 
       expect(result.valid).toBe(true);
     });
@@ -141,7 +136,7 @@ describe("tradeLogic", () => {
         [makeHotbarSlot("e0000000-0000-4000-8000-000000000001", 0, potion)],
       );
 
-      const result = validateTradeOffer(inventory, [makeTradeItem(POTION_ID, 1)]);
+      const result = validateTradeOffer(inventory, [potion]);
 
       expect(result.valid).toBe(true);
     });
@@ -152,7 +147,7 @@ describe("tradeLogic", () => {
       ]);
 
       const result = validateTradeOffer(inventory, [
-        makeTradeItem("a0000000-0000-4000-8000-000000000099", 1),
+        makeItem({ id: "a0000000-0000-4000-8000-000000000099" }),
       ]);
 
       expect(result.valid).toBe(false);
@@ -171,7 +166,8 @@ describe("tradeLogic", () => {
         makeBackpackSlot("c0000000-0000-4000-8000-000000000003", 0, ore),
       ]);
 
-      const result = validateTradeOffer(inventory, [makeTradeItem(ORE_TEMPLATE_ID, 5)]);
+      // Offering 5 but only holds 2
+      const result = validateTradeOffer(inventory, [{ ...ore, quantity: 5 }]);
 
       expect(result.valid).toBe(false);
       expect(result.reason).toBe("insufficient-quantity");
@@ -200,8 +196,17 @@ describe("tradeLogic", () => {
         makeBackpackSlot("c0000000-0000-4000-8000-000000000005", 1, oreStack2),
       ]);
 
-      // 3 + 3 = 6 total; offering 5 should pass
-      const result = validateTradeOffer(inventory, [makeTradeItem(oreTemplateId, 5)]);
+      // 3 + 3 = 6 total; offering 5 should pass — different instance id, same template
+      const result = validateTradeOffer(inventory, [
+        makeItem({
+          id: "a0000000-0000-4000-8000-000000000053",
+          templateId: oreTemplateId,
+          name: "Iron Ore",
+          type: "material",
+          maxStack: 20,
+          quantity: 5,
+        }),
+      ]);
 
       expect(result.valid).toBe(true);
     });
@@ -220,8 +225,14 @@ describe("tradeLogic", () => {
         makeBackpackSlot("c0000000-0000-4000-8000-000000000006", 0, item),
       ]);
 
-      // Offer uses templateId, not the instance id
-      const result = validateTradeOffer(inventory, [makeTradeItem(templateId, 1)]);
+      // Offered item has a different instance id but the same template id
+      const offeredItem = makeItem({
+        id: "a0000000-0000-4000-8000-000000000062",
+        templateId,
+        name: "Rare Gem",
+        type: "material",
+      });
+      const result = validateTradeOffer(inventory, [offeredItem]);
 
       expect(result.valid).toBe(true);
     });
@@ -290,8 +301,8 @@ describe("tradeLogic", () => {
       ]);
 
       const offer = makeTradeOffer({
-        initiatorItems: [makeTradeItem(SWORD_ID, 1)],
-        recipientItems: [makeTradeItem(POTION_ID, 3)],
+        initiatorItems: [sword],
+        recipientItems: [{ ...potions, quantity: 3 }],
       });
 
       const result = completeTrade(offer, initiatorInventory, recipientInventory);
@@ -331,8 +342,8 @@ describe("tradeLogic", () => {
       ]);
 
       const offer = makeTradeOffer({
-        initiatorItems: [makeTradeItem(SWORD_ID, 1)],
-        recipientItems: [makeTradeItem(POTION_ID, 3)],
+        initiatorItems: [sword],
+        recipientItems: [{ ...potions, quantity: 3 }],
       });
 
       const result = completeTrade(offer, initiatorInventory, recipientInventory);
@@ -382,8 +393,9 @@ describe("tradeLogic", () => {
       ]);
 
       const offer = makeTradeOffer({
-        initiatorItems: [makeTradeItem(ORE_TEMPLATE_ID, 5)],
-        recipientItems: [makeTradeItem(POTION_ID, 2)],
+        // Only has 2 ore but tries to offer 5
+        initiatorItems: [{ ...ore, quantity: 5 }],
+        recipientItems: [{ ...potions, quantity: 2 }],
       });
 
       const result = completeTrade(offer, initiatorInventory, recipientInventory);
@@ -410,8 +422,9 @@ describe("tradeLogic", () => {
       ]);
 
       const offer = makeTradeOffer({
-        initiatorItems: [makeTradeItem(SWORD_ID, 1)],
-        recipientItems: [makeTradeItem(POTION_ID, 2)],
+        initiatorItems: [sword],
+        // Recipient offers potions they don't have
+        recipientItems: [makeItem({ id: POTION_ID, type: "consumable", maxStack: 10, quantity: 2 })],
       });
 
       const result = completeTrade(offer, initiatorInventory, recipientInventory);
@@ -445,8 +458,8 @@ describe("tradeLogic", () => {
       ]);
 
       const offer = makeTradeOffer({
-        initiatorItems: [makeTradeItem(SWORD_ID, 1)],
-        recipientItems: [makeTradeItem(POTION_ID, 3)],
+        initiatorItems: [sword],
+        recipientItems: [{ ...potions, quantity: 3 }],
       });
 
       const result = completeTrade(offer, initiatorInventory, recipientInventory);
@@ -496,8 +509,8 @@ describe("tradeLogic", () => {
       ]);
 
       const offer = makeTradeOffer({
-        initiatorItems: [makeTradeItem(SWORD_ID, 1)],
-        recipientItems: [makeTradeItem(POTION_ID, 3)],
+        initiatorItems: [sword],
+        recipientItems: [{ ...potions, quantity: 3 }],
       });
 
       // Simulate the first store dispatch
