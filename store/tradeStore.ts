@@ -3,6 +3,7 @@ import type { InventoryItem, UUID } from "@/types/inventory";
 import type { InventoryCollections } from "@/lib/inventoryLogic";
 import type { TradeOffer } from "@/types/trade";
 import { completeTrade } from "@/lib/tradeLogic";
+import { createUUID } from "@/lib/uuid";
 
 export type TradeSide = "initiator" | "recipient";
 
@@ -34,7 +35,7 @@ export const useTradeStore = create<TradeStoreState>((set, get) => ({
       initiatorInventory,
       recipientInventory,
       offer: {
-        id: createTradeId(),
+        id: createUUID(),
         status: "pending",
         initiatorItems: [],
         recipientItems: [],
@@ -113,15 +114,3 @@ export const useTradeStore = create<TradeStoreState>((set, get) => ({
     }),
 }));
 
-function createTradeId(): UUID {
-  if (globalThis.crypto?.randomUUID) {
-    return globalThis.crypto.randomUUID();
-  }
-
-  const randomTail = Math.floor(Math.random() * 0xffffffffffff)
-    .toString(16)
-    .padStart(12, "0")
-    .slice(0, 12);
-
-  return `10000000-0000-4000-8000-${randomTail}`;
-}

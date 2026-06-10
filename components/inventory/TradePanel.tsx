@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useMemo } from "react";
+import { memo, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { getIconPlaceholder } from "@/lib/inventoryDisplay";
 import { validateTradeOffer } from "@/lib/tradeLogic";
@@ -43,6 +43,8 @@ function TradePanel() {
     })),
   );
 
+  const [completionError, setCompletionError] = useState<string | null>(null);
+
   const validation = useMemo(
     () => validateTradeOffer({ backpack, equipment, hotbar }, offer?.initiatorItems ?? []),
     [backpack, equipment, hotbar, offer?.initiatorItems],
@@ -56,6 +58,7 @@ function TradePanel() {
 
   function handleComplete() {
     if (!canComplete) return;
+    setCompletionError(null);
     const currentInventory = { backpack, equipment, hotbar };
     const initiatorResult = completeAcceptedTrade(currentInventory);
     if (initiatorResult) {
@@ -64,6 +67,8 @@ function TradePanel() {
         equipment: initiatorResult.equipment,
         hotbar: initiatorResult.hotbar,
       });
+    } else {
+      setCompletionError("Trade could not be completed — your backpack may be full.");
     }
   }
 
@@ -107,6 +112,7 @@ function TradePanel() {
       ) : (
         <TradeOfferView
           canComplete={canComplete}
+          completionError={completionError}
           disabledReason={disabledReason}
           offer={offer}
           onAccept={acceptOffer}
@@ -123,6 +129,7 @@ function TradePanel() {
 
 interface TradeOfferViewProps {
   canComplete: boolean;
+  completionError: string | null;
   disabledReason: string | null;
   offer: TradeOffer;
   onAccept: () => void;
@@ -135,6 +142,7 @@ interface TradeOfferViewProps {
 
 function TradeOfferView({
   canComplete,
+  completionError,
   disabledReason,
   offer,
   onAccept,
@@ -161,6 +169,15 @@ function TradeOfferView({
           role="alert"
         >
           {disabledReason}
+        </div>
+      ) : null}
+
+      {completionError ? (
+        <div
+          className="mt-3 rounded-md border border-red-800/50 bg-red-950/30 px-3 py-2 text-sm text-red-300"
+          role="alert"
+        >
+          {completionError}
         </div>
       ) : null}
 
