@@ -1,10 +1,17 @@
+"use client";
+
+import dynamic from "next/dynamic";
 import { BackpackGrid } from "@/components/inventory/BackpackGrid";
 import { CraftingPanel } from "@/components/inventory/CraftingPanel";
 import { EquipmentPanel } from "@/components/inventory/EquipmentPanel";
 import { Hotbar } from "@/components/inventory/Hotbar";
-import { InventoryDndProvider } from "@/components/inventory/InventoryDnd";
 import { InventorySearch } from "@/components/inventory/InventorySearch";
 import { WeightPanel } from "@/components/inventory/WeightPanel";
+
+const InventoryDndProvider = dynamic(
+  () => import("@/components/inventory/InventoryDnd").then((m) => ({ default: m.InventoryDndProvider })),
+  { ssr: false },
+);
 
 export default function Home() {
   return (
