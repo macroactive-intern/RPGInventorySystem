@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { BackpackGrid } from "@/components/inventory/BackpackGrid";
 import { CraftingPanel } from "@/components/inventory/CraftingPanel";
 import { EquipmentPanel } from "@/components/inventory/EquipmentPanel";
+import { TradePanel } from "@/components/inventory/TradePanel";
 import { Hotbar } from "@/components/inventory/Hotbar";
 import { InventorySearch } from "@/components/inventory/InventorySearch";
 import { WeightPanel } from "@/components/inventory/WeightPanel";
@@ -45,6 +46,7 @@ export default function Home() {
                 <BackpackGrid />
               </section>
               <CraftingPanel />
+              <TradePanel />
             </div>
           </div>
           <Hotbar />

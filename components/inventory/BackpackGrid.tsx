@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import type { InventoryItem } from "@/types/inventory";
 import {
   getIconPlaceholder,
@@ -13,12 +14,16 @@ import {
   InventoryDroppableSlot,
 } from "@/components/inventory/InventoryDnd";
 
-export function BackpackGrid() {
+function BackpackGrid() {
   const backpack = useInventoryStore((state) => state.backpack);
   const slotCount = backpack.length;
-  const slots = Array.from({ length: slotCount }, (_, index) => {
-    return backpack.find((slot) => slot.index === index) ?? null;
-  });
+  const slots = useMemo(
+    () =>
+      Array.from({ length: slotCount }, (_, index) =>
+        backpack.find((slot) => slot.index === index) ?? null,
+      ),
+    [backpack, slotCount],
+  );
 
   return (
     <section aria-labelledby="backpack-heading" className="w-full">
@@ -120,4 +125,6 @@ function InventorySlotCell({ index, item, slotId }: InventorySlotCellProps) {
     </InventoryDroppableSlot>
   );
 }
+
+export { BackpackGrid };
 

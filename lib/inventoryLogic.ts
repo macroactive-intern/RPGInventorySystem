@@ -7,6 +7,7 @@ import type {
   UUID,
 } from "@/types/inventory";
 import { getTemplateId } from "@/lib/itemIdentity";
+import { createUUID } from "@/lib/uuid";
 
 export type InventoryContainer = "backpack" | "equipment" | "hotbar";
 
@@ -124,7 +125,7 @@ export function mergeStacks(
 export function splitStack(
   item: InventoryItem,
   amount: number,
-  splitId: UUID = generateUuid(),
+  splitId: UUID = createUUID(),
 ): SplitStackResult | null {
   if (
     item.maxStack <= 1 ||
@@ -427,15 +428,4 @@ function updateContainer<TSlot extends AnyInventorySlot>(
 
     return update ? ({ ...slot, item: update.item } as TSlot) : slot;
   });
-}
-
-function generateUuid(): UUID {
-  if (globalThis.crypto?.randomUUID) {
-    return globalThis.crypto.randomUUID();
-  }
-  const tail = Math.floor(Math.random() * 0xffffffffffff)
-    .toString(16)
-    .padStart(12, "0")
-    .slice(0, 12);
-  return `10000000-0000-4000-8000-${tail}`;
 }
