@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { InventoryItem, UUID } from "@/types/inventory";
+import type { InventoryItem } from "@/types/inventory";
 import type { InventoryCollections } from "@/lib/inventoryLogic";
 import type { TradeOffer } from "@/types/trade";
 import { completeTrade } from "@/lib/tradeLogic";
