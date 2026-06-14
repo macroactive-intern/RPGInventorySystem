@@ -1,5 +1,7 @@
 "use client";
 
+import { memo } from "react";
+import { useShallow } from "zustand/react/shallow";
 import type { EquipmentSlot, SlotType } from "@/types/inventory";
 import {
   getIconPlaceholder,
@@ -74,7 +76,7 @@ const equipmentSlots: readonly EquipmentSlotDefinition[] = [
   },
 ];
 
-export function EquipmentPanel() {
+function EquipmentPanel() {
   const equipment = useInventoryStore((state) => state.equipment);
 
   return (
@@ -112,24 +114,24 @@ interface EquipmentSlotCardProps {
   slot: EquipmentSlot | null;
 }
 
-function EquipmentSlotCard({ definition, slot }: EquipmentSlotCardProps) {
-  const inventorySearchQuery = useInventoryStore(
-    (state) => state.inventorySearchQuery,
+const EquipmentSlotCard = memo(function EquipmentSlotCard({ definition, slot }: EquipmentSlotCardProps) {
+  const slotPointer = {
+    container: "equipment" as const,
+    slotId: slot?.id ?? `missing-equipment-slot-${definition.label}`,
+  };
+  const { inventorySearchQuery, rejectionReason } = useInventoryStore(
+    useShallow((state) => ({
+      inventorySearchQuery: state.inventorySearchQuery,
+      rejectionReason: isSameSlot(state.rejectedSlot?.slot ?? null, slotPointer)
+        ? (state.rejectedSlot?.reason ?? "Invalid drop")
+        : null,
+    })),
   );
   const item = slot?.item ?? null;
   const isSearchMatch = itemMatchesSearch(item, inventorySearchQuery);
   const borderClass = item
     ? rarityBorderClasses[item.rarity]
     : "border-dashed border-slate-700";
-  const slotPointer = {
-    container: "equipment" as const,
-    slotId: slot?.id ?? `missing-equipment-slot-${definition.label}`,
-  };
-  const rejectionReason = useInventoryStore((state) =>
-    isSameSlot(state.rejectedSlot?.slot ?? null, slotPointer)
-      ? (state.rejectedSlot?.reason ?? "Invalid drop")
-      : null,
-  );
   const isRejected = rejectionReason !== null;
 
   return (
@@ -193,7 +195,7 @@ function EquipmentSlotCard({ definition, slot }: EquipmentSlotCardProps) {
       </div>
     </InventoryDroppableSlot>
   );
-}
+});
 
 function BodySilhouette() {
   return (
@@ -220,4 +222,7 @@ function findEquipmentSlot(
 
   return matchingSlots[occurrence] ?? null;
 }
+
+const _EquipmentPanel = memo(EquipmentPanel);
+export { _EquipmentPanel as EquipmentPanel };
 
