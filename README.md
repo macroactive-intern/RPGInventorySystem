@@ -29,7 +29,7 @@ No environment variables are required. Copy `.env.example` to `.env` if you add 
 | `npm start` | Start the production server (requires build first) |
 | `npm test` | Run unit tests (Vitest) |
 | `npm run test:e2e` | Run end-to-end tests (Playwright) |
-| `npm run lint` | Run ESLint via `next lint` |
+| `npm run lint` | Run ESLint (`eslint .`) |
 | `npx tsc --noEmit` | Run the TypeScript type checker |
 
 ## Testing

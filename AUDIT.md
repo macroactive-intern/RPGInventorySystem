@@ -3,28 +3,27 @@
 **Project:** rpg-inventory-system  
 **Stack:** Next.js 16 / TypeScript / Zustand / Vitest / Playwright  
 **Branch:** L16-trading-system  
-**Audit date:** 2026-06-15  
-**Fixes applied:** 2026-06-15  
-**Rubric:** RUBRIC.md (committed 2026-06-15)
+**Date:** 2026-06-15  
+**Rubric:** RUBRIC.md
 
 ---
 
 ## Stack Translation Note
 
-The rubric was written for a Laravel/PHP stack. This project is Next.js. Where a rubric item is PHP-specific, this audit translates it to its Next.js equivalent and audits against that. Items with no reasonable equivalent are marked **N/A** and excluded from the score.
+The rubric targets a Laravel/PHP stack. This project is Next.js 16. PHP-specific items are translated to their Next.js equivalents; items with no reasonable equivalent are marked **N/A** and excluded from scoring.
 
-| Rubric term | This project's equivalent |
+| Rubric term | Next.js equivalent used |
 |---|---|
 | `dump()` / `dd()` | `console.log` / `console.error` |
-| `./vendor/bin/pint --test` | `eslint .` (note: `next lint` removed in Next.js 16) |
+| `./vendor/bin/pint --test` | `eslint .` (`next lint` removed in Next.js 16) |
 | `./vendor/bin/phpstan analyse --level=5` | `npx tsc --noEmit` |
-| `php artisan test` | `npm test` (vitest) |
+| `php artisan test` | `npm test` (Vitest) |
 | `composer install` | `npm install` |
-| `php artisan key:generate` | not applicable — no secret key |
-| `php artisan migrate` | not applicable — no database |
+| `php artisan key:generate` | N/A — no secret key |
+| `php artisan migrate` | N/A — no database |
 | `php artisan serve` | `npm run dev` |
-| `Kernel.php` middleware | `next.config.ts` headers |
-| PHPStan installed | TypeScript + `tsconfig.json` configured |
+| `Kernel.php` middleware | `next.config.ts` `headers()` |
+| PHPStan installed | TypeScript + `tsconfig.json` |
 | mixed types | `any` types |
 
 ---
@@ -33,12 +32,12 @@ The rubric was written for a Laravel/PHP stack. This project is Next.js. Where a
 
 | ID | Result | Finding |
 |---|---|---|
-| ENV-01 | **PASS** | `.env.example` created and committed |
-| ENV-02 | **PASS** | `.env.example` committed; `.gitignore` has `.env*` + `!.env.example` exception |
-| ENV-03 | N/A | App has no required environment variables — fully client-side with no external services |
-| ENV-04 | **PASS** | No hardcoded secrets, tokens, or API keys found in any source file |
+| ENV-01 | **PASS** | `.env.example` committed; documents that no vars are currently required |
+| ENV-02 | **PASS** | `.env*` ignored in `.gitignore`; `!.env.example` exception allows the example to be tracked; `git check-ignore` confirms `.env.example` is not ignored |
+| ENV-03 | N/A | App is fully client-side with no external services; no required vars exist to validate |
+| ENV-04 | **PASS** | No passwords, tokens, API keys, or credentials found in `app/`, `components/`, `lib/`, or `store/` |
 | ENV-05 | N/A | No environment variables are used |
-| ENV-06 | N/A | Nothing to document |
+| ENV-06 | N/A | No vars to document |
 
 ---
 
@@ -46,12 +45,12 @@ The rubric was written for a Laravel/PHP stack. This project is Next.js. Where a
 
 | ID | Result | Finding |
 |---|---|---|
-| CI-01 | **PASS** | `.github/workflows/ci.yml` created |
-| CI-02 | **PASS** | `eslint .` runs in CI (note: `next lint` was removed in Next.js 16; `eslint .` is the equivalent) |
-| CI-03 | **PASS** | `npx tsc --noEmit` runs in CI |
-| CI-04 | **PASS** | `npm test` (vitest) runs in CI |
-| CI-05 | **PASS** | Workflow triggers on `push` and `pull_request` for all branches |
-| CI-06 | **PASS** | Each step fails the job on non-zero exit; blocks merge |
+| CI-01 | **PASS** | `.github/workflows/ci.yml` exists |
+| CI-02 | **PASS** | `npm run lint` (`eslint .`) runs as step 4 of the CI job; exits 0 with no errors or warnings |
+| CI-03 | **PASS** | `npx tsc --noEmit` runs as step 5; exits 0 — zero type errors (verified live) |
+| CI-04 | **PASS** | `npm test` (Vitest) runs as step 6; 44 tests, 5 files, all pass |
+| CI-05 | **PASS** | Workflow triggers on `push: branches: ["**"]` and `pull_request: branches: ["**"]` |
+| CI-06 | **PASS** | Each step is a separate `run:` command; non-zero exit fails the job and blocks merge |
 | CI-07 | N/A | No secrets in the workflow file |
 
 ---
@@ -60,9 +59,9 @@ The rubric was written for a Laravel/PHP stack. This project is Next.js. Where a
 
 | ID | Result | Finding |
 |---|---|---|
-| LOG-01 | **PASS** | No `console.log`, `console.warn`, or `console.error` in application code |
-| LOG-02 | **PASS** | No PII, tokens, or sensitive data in any log output |
-| LOG-03 | N/A | Fully client-side app; no exception logging infrastructure |
+| LOG-01 | **PASS** | No `console.log`, `console.warn`, or `console.error` in `app/`, `components/`, `lib/`, or `store/` |
+| LOG-02 | **PASS** | No PII, tokens, or sensitive values in any log output |
+| LOG-03 | N/A | Fully client-side; no server-side exception logging |
 | LOG-04 | N/A | No API routes |
 | LOG-05 | N/A | No server-side code |
 
@@ -72,12 +71,12 @@ The rubric was written for a Laravel/PHP stack. This project is Next.js. Where a
 
 | ID | Result | Finding |
 |---|---|---|
-| SEC-01 | **PASS** | `X-Content-Type-Options: nosniff` added via `next.config.ts` `headers()` |
-| SEC-02 | **PASS** | `X-Frame-Options: SAMEORIGIN` added via `next.config.ts` `headers()` |
-| SEC-03 | **PASS** | `X-XSS-Protection: 1; mode=block` added via `next.config.ts` `headers()` |
-| SEC-04 | **PASS** | All security headers applied globally to `source: "/(.*)"` in `next.config.ts` |
-| SEC-05 | N/A | `Kernel.php` is Laravel-specific; Next.js equivalent handled by `next.config.ts` (SEC-04) |
-| SEC-06 | N/A | No API routes or user-data endpoints |
+| SEC-01 | **PASS** | `X-Content-Type-Options: nosniff` set in `next.config.ts` |
+| SEC-02 | **PASS** | `X-Frame-Options: SAMEORIGIN` set in `next.config.ts` |
+| SEC-03 | **PASS** | `X-XSS-Protection: 1; mode=block` set in `next.config.ts` |
+| SEC-04 | **PASS** | All headers applied globally via `headers()` with `source: "/(.*)"` — every route is covered |
+| SEC-05 | N/A | `Kernel.php` is Laravel-specific; the Next.js equivalent (`next.config.ts` headers) satisfies SEC-04 |
+| SEC-06 | N/A | No API routes or authenticated endpoints |
 
 ---
 
@@ -85,14 +84,14 @@ The rubric was written for a Laravel/PHP stack. This project is Next.js. Where a
 
 | ID | Result | Finding |
 |---|---|---|
-| DOC-01 | **PASS** | README describes the app: drag-and-drop RPG inventory UI with panel breakdown |
-| DOC-02 | **PASS** | README lists Node.js 20+ and npm 10+ as prerequisites |
-| DOC-03 | **PASS** | README has a 4-command clone → run sequence (`git clone`, `cd`, `npm install`, `npm run dev`) |
-| DOC-04 | N/A | No `.env` required |
+| DOC-01 | **PASS** | README opens with one paragraph describing the app: drag-and-drop RPG inventory UI, panels listed |
+| DOC-02 | **PASS** | Prerequisites section lists Node.js 20+ and npm 10+ |
+| DOC-03 | **PASS** | Setup section gives a 4-command sequence (`git clone`, `cd`, `npm install`, `npm run dev`) that works from a fresh clone |
+| DOC-04 | N/A | No `.env` configuration required |
 | DOC-05 | N/A | No database or migrations |
-| DOC-06 | **PASS** | `npm test` documented in the commands table with description |
-| DOC-07 | N/A | No Pint/PHPStan; `eslint .` and `npx tsc --noEmit` are listed in the commands table |
-| DOC-08 | **PASS** | `npm run dev` documented in the commands table |
+| DOC-06 | **PASS** | Commands table includes `npm test` with description |
+| DOC-07 | N/A | No Pint/PHPStan; `npm run lint` and `npx tsc --noEmit` are in the commands table |
+| DOC-08 | **PASS** | Commands table includes `npm run dev` with description |
 
 ---
 
@@ -102,10 +101,10 @@ The rubric was written for a Laravel/PHP stack. This project is Next.js. Where a
 
 | ID | Result | Finding |
 |---|---|---|
-| PHP-01 | **PASS** | TypeScript configured; `tsconfig.json` present with `"strict": true` |
-| PHP-02 | **PASS** | `npx tsc --noEmit` exits 0 — zero type errors (verified live) |
-| PHP-03 | **PASS** | No `any` types found in application code |
-| PHP-04 | **PASS** | Components, store slices, and logic functions use explicit TypeScript types throughout |
+| PHP-01 | **PASS** | TypeScript installed; `tsconfig.json` present with `"strict": true` |
+| PHP-02 | **PASS** | `npx tsc --noEmit` exits 0 — zero errors (verified live) |
+| PHP-03 | **PASS** | No `: any` or `as any` casts found in application code |
+| PHP-04 | **PASS** | Functions, store actions, and components carry explicit TypeScript types throughout |
 | PHP-05 | **PASS** | No `@ts-ignore` or `@ts-expect-error` in the codebase |
 
 ---
@@ -117,7 +116,7 @@ The rubric was written for a Laravel/PHP stack. This project is Next.js. Where a
 | ERR-01 | N/A | No API routes |
 | ERR-02 | N/A | No server-side validation |
 | ERR-03 | N/A | No authentication or authorization layer |
-| ERR-04 | **PASS** | `app/not-found.tsx` created with themed 404 page and link back to inventory |
+| ERR-04 | **PASS** | `app/not-found.tsx` exists — themed 404 page with heading, message, and link back to inventory |
 | ERR-05 | N/A | No server-side exception paths |
 
 ---
@@ -126,12 +125,12 @@ The rubric was written for a Laravel/PHP stack. This project is Next.js. Where a
 
 | ID | Result | Finding |
 |---|---|---|
-| TEST-01 | **PASS** | `npm test` exits 0 — 44 tests across 5 files, all passing |
-| TEST-02 | **PASS** | Core logic fully covered: `inventoryLogic`, `tradeLogic`, `craftingLogic`, `inventoryStore`, `inventoryDisplay` |
-| TEST-03 | **PASS** | Playwright smoke test added in `e2e/smoke.test.ts`; verifies header, main landmark, and Quartermaster text render |
-| TEST-04 | **PASS** | Failure paths explicitly tested — invalid slots, full stacks, quantity overflows, rejected trade offers |
+| TEST-01 | **PASS** | `npm test` exits 0 — 44 tests, 5 files, all pass (verified live) |
+| TEST-02 | **PASS** | `inventoryLogic`, `tradeLogic`, `craftingLogic`, `inventoryStore`, `inventoryDisplay` all have unit tests |
+| TEST-03 | **PASS** | `e2e/smoke.test.ts` (Playwright) verifies page load, `<h1>RPG Inventory System</h1>`, main landmark, and "Quartermaster" text |
+| TEST-04 | **PASS** | Failure paths explicitly tested: invalid slots, full stacks, quantity overflows, rejected trade offers |
 | TEST-05 | N/A | No authorization or ownership model |
-| TEST-06 | **PASS** | No skipped tests; all 44 unit tests pass unconditionally |
+| TEST-06 | **PASS** | No `.skip`, `.todo`, `xtest`, or `xit` in any test file |
 
 ---
 
@@ -141,12 +140,12 @@ The rubric was written for a Laravel/PHP stack. This project is Next.js. Where a
 
 | ID | Result | Finding |
 |---|---|---|
-| RUN-01 | **PASS** | `npm install` works; `package.json` is well-formed |
+| RUN-01 | **PASS** | `package.json` is well-formed; `npm install` succeeds |
 | RUN-02 | N/A | No app key or secret generation required |
 | RUN-03 | N/A | No database or migrations |
-| RUN-04 | **PASS** | `npm test` passes from a clean checkout (verified live) |
-| RUN-05 | **PASS** | `npm run dev` / `next dev` starts cleanly; `next build` exits 0 |
-| RUN-06 | **FAIL** | WASM packages (`@emnapi/core`, `@napi-rs/wasm-runtime`, etc.) appear as extraneous in `node_modules` — transitive deps, not directly removable; run `npm prune` on next fresh install |
+| RUN-04 | **PASS** | `npm test` exits 0 from a clean state (verified live) |
+| RUN-05 | **PASS** | `next build` exits 0; all 4 static pages generated cleanly |
+| RUN-06 | **FAIL** | WASM packages (`@emnapi/core`, `@emnapi/runtime`, `@emnapi/wasm-threads`, `@napi-rs/wasm-runtime`, `@tybys/wasm-util`) appear as extraneous in `node_modules`; they are transitive deps not directly removable — `npm ci` on a clean environment may resolve this |
 
 ---
 
@@ -171,23 +170,23 @@ The rubric was written for a Laravel/PHP stack. This project is Next.js. Where a
 
 ## MUST Item Verdicts
 
-| ID | Result |
-|---|---|
-| ENV-03 | N/A |
-| ENV-04 | PASS |
-| CI-01 | **PASS** |
-| CI-02 | **PASS** |
-| CI-03 | **PASS** |
-| CI-04 | **PASS** |
-| SEC-01 | **PASS** |
-| SEC-02 | **PASS** |
-| SEC-03 | **PASS** |
-| SEC-04 | **PASS** |
-| SEC-05 | N/A |
-| PHP-02 | PASS |
-| TEST-01 | PASS |
-| RUN-03 | N/A |
-| RUN-04 | PASS |
+| ID | Applicable | Result |
+|---|---|---|
+| ENV-03 | No | N/A |
+| ENV-04 | Yes | **PASS** |
+| CI-01 | Yes | **PASS** |
+| CI-02 | Yes | **PASS** |
+| CI-03 | Yes | **PASS** |
+| CI-04 | Yes | **PASS** |
+| SEC-01 | Yes | **PASS** |
+| SEC-02 | Yes | **PASS** |
+| SEC-03 | Yes | **PASS** |
+| SEC-04 | Yes | **PASS** |
+| SEC-05 | No | N/A |
+| PHP-02 | Yes | **PASS** |
+| TEST-01 | Yes | **PASS** |
+| RUN-03 | No | N/A |
+| RUN-04 | Yes | **PASS** |
 
 **0 MUST items fail.**
 
@@ -195,14 +194,12 @@ The rubric was written for a Laravel/PHP stack. This project is Next.js. Where a
 
 ## Verdict
 
-> **Ship with tickets.**
+> **Ship.**
 
 All MUST items pass. 34/35 applicable items pass (97.1%), above the 80% threshold for **Ship**.
 
-The one remaining failure (RUN-06 — extraneous WASM packages) is a cosmetic `node_modules` cleanliness issue, not a functional or security risk. It resolves automatically on a fresh `npm ci`.
-
 ### Open ticket
 
-| ID | Fix |
-|---|---|
-| RUN-06 | Investigate which transitive dep pulls WASM packages; run `npm prune` or `npm ci` on a clean environment to verify they disappear |
+| ID | Finding | Action |
+|---|---|---|
+| RUN-06 | WASM packages extraneous in `node_modules` | Run `npm ci` on a clean machine to confirm they disappear; if they persist, identify which transitive dep introduces them |
