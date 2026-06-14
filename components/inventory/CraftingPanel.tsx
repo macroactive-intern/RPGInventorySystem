@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { getIconPlaceholder } from "@/lib/inventoryDisplay";
 import { getTemplateId } from "@/lib/itemIdentity";
 import { useInventoryStore } from "@/store/inventoryStore";
@@ -14,7 +14,7 @@ interface MaterialOption {
   quantity: number;
 }
 
-export function CraftingPanel() {
+function CraftingPanel() {
   const backpack = useInventoryStore((state) => state.backpack);
   const craftItem = useInventoryStore((state) => state.craftItem);
   const recipes = useInventoryStore((state) => state.craftingRecipes);
@@ -320,4 +320,7 @@ function countIngredients(
     return counts;
   }, new Map<string, number>());
 }
+
+const _CraftingPanel = memo(CraftingPanel);
+export { _CraftingPanel as CraftingPanel };
 

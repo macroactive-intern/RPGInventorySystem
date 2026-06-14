@@ -7,6 +7,7 @@ import type {
   UUID,
 } from "@/types/inventory";
 import { getTemplateId } from "@/lib/itemIdentity";
+import { createUUID } from "@/lib/uuid";
 
 export type InventoryContainer = "backpack" | "equipment" | "hotbar";
 
@@ -124,7 +125,7 @@ export function mergeStacks(
 export function splitStack(
   item: InventoryItem,
   amount: number,
-  splitId: UUID = item.id,
+  splitId: UUID = createUUID(),
 ): SplitStackResult | null {
   if (
     item.maxStack <= 1 ||
@@ -398,6 +399,16 @@ function updateSlots(
     equipment: updateContainer(inventory.equipment, "equipment", updates),
     hotbar: updateContainer(inventory.hotbar, "hotbar", updates),
   };
+}
+
+export function applySlotUpdates(
+  inventory: InventoryCollections,
+  updates: readonly { slot: SlotReference; item: InventoryItem | null }[],
+): InventoryCollections {
+  return updateSlots(
+    inventory,
+    updates.map((u) => ({ reference: u.slot, item: u.item })),
+  );
 }
 
 function updateContainer<TSlot extends AnyInventorySlot>(

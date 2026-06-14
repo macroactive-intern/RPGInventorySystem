@@ -249,6 +249,7 @@ describe("inventoryLogic", () => {
     expect((result?.split.quantity ?? 0) + (result?.remaining.quantity ?? 0)).toBe(
       arrows.quantity,
     );
+    expect(result?.split.id).not.toBe(result?.remaining.id);
   });
 
   it("splits a stack into a distinct stack instance", () => {

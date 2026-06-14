@@ -103,7 +103,6 @@ export function InventoryDndProvider({ children }: InventoryDndProviderProps) {
   const clearRejectedSlot = useInventoryStore((state) => state.clearRejectedSlot);
   const closeContextMenu = useInventoryStore((state) => state.closeContextMenu);
   const moveItem = useInventoryStore((state) => state.moveItem);
-  const rejectedSlot = useInventoryStore((state) => state.rejectedSlot);
   const setRejectedSlot = useInventoryStore((state) => state.setRejectedSlot);
   const setDraggedItem = useInventoryStore((state) => state.setDraggedItem);
   const setTooltip = useInventoryStore((state) => state.setTooltip);
@@ -190,9 +189,7 @@ export function InventoryDndProvider({ children }: InventoryDndProviderProps) {
         sensors={sensors}
       >
         {children}
-        <div aria-live="polite" className="sr-only">
-          {rejectedSlot?.reason ?? ""}
-        </div>
+        <RejectionAnnouncement />
         <DragOverlay>
           {draggedItem ? <DragOverlayItem item={draggedItem.item} /> : null}
         </DragOverlay>
@@ -202,6 +199,16 @@ export function InventoryDndProvider({ children }: InventoryDndProviderProps) {
         <ItemTooltip />
       </DndContext>
     </TooltipPositionProvider>
+  );
+}
+
+function RejectionAnnouncement() {
+  const reason = useInventoryStore((state) => state.rejectedSlot?.reason ?? "");
+
+  return (
+    <div aria-live="polite" className="sr-only">
+      {reason}
+    </div>
   );
 }
 

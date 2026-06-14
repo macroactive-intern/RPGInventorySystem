@@ -7,12 +7,12 @@ import {
   starterHotbar,
 } from "@/lib/itemFixtures";
 import {
+  applySlotUpdates,
   canEquip,
   findValidEquipmentSlot,
   moveItemWithResult,
   splitStack as splitInventoryStack,
   type InventoryCollections,
-  type InventoryContainer,
   type SlotReference,
 } from "@/lib/inventoryLogic";
 import type {
@@ -23,6 +23,7 @@ import type {
   UUID,
 } from "@/types/inventory";
 import type { CraftingRecipe } from "@/types/crafting";
+import { createUUID } from "@/lib/uuid";
 
 type InventorySlot = BackpackSlot | EquipmentSlot | HotbarSlot;
 
@@ -200,7 +201,7 @@ export const useInventoryStore = create<InventoryStoreState>((set, get) => ({
     const result = craftInventoryItem(
       getInventoryCollections(state),
       recipe,
-      createRuntimeUuid(),
+      createUUID(),
     );
 
     if (!result.crafted) {
@@ -235,7 +236,7 @@ export const useInventoryStore = create<InventoryStoreState>((set, get) => ({
     const splitResult = splitInventoryStack(
       sourceSlot.item,
       amount,
-      createRuntimeUuid(),
+      createUUID(),
     );
 
     if (!splitResult) {
@@ -248,7 +249,7 @@ export const useInventoryStore = create<InventoryStoreState>((set, get) => ({
     };
 
     set({
-      ...updateSlots(state, [
+      ...applySlotUpdates(state, [
         { slot: source, item: splitResult.remaining },
         { slot: targetSlotPointer, item: splitResult.split },
       ]),
@@ -261,7 +262,7 @@ export const useInventoryStore = create<InventoryStoreState>((set, get) => ({
   },
   removeItem: (slot) =>
     set((state) => ({
-      ...updateSlots(state, [{ slot, item: null }]),
+      ...applySlotUpdates(state, [{ slot, item: null }]),
       contextMenu: null,
       itemInspectionModal: null,
       splitStackModal: null,
@@ -390,47 +391,4 @@ function findEquipmentSlotForEquip(
   return emptyCompatibleSlot ?? findValidEquipmentSlot(item, equipment);
 }
 
-function createRuntimeUuid(): UUID {
-  if (globalThis.crypto?.randomUUID) {
-    return globalThis.crypto.randomUUID();
-  }
 
-  const randomTail = Math.floor(Math.random() * 0xffffffffffff)
-    .toString(16)
-    .padStart(12, "0")
-    .slice(0, 12);
-
-  return `10000000-0000-4000-8000-${randomTail}`;
-}
-
-function updateSlots(
-  inventory: InventoryCollections,
-  updates: readonly {
-    slot: SlotPointer;
-    item: InventoryItem | null;
-  }[],
-): InventoryCollections {
-  return {
-    backpack: updateContainer(inventory.backpack, "backpack", updates),
-    equipment: updateContainer(inventory.equipment, "equipment", updates),
-    hotbar: updateContainer(inventory.hotbar, "hotbar", updates),
-  };
-}
-
-function updateContainer<TSlot extends InventorySlot>(
-  slots: readonly TSlot[],
-  container: InventoryContainer,
-  updates: readonly {
-    slot: SlotPointer;
-    item: InventoryItem | null;
-  }[],
-): TSlot[] {
-  return slots.map((slot) => {
-    const update = updates.find(
-      (candidate) =>
-        candidate.slot.container === container && candidate.slot.slotId === slot.id,
-    );
-
-    return update ? ({ ...slot, item: update.item } as TSlot) : slot;
-  });
-}
