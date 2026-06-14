@@ -46,8 +46,8 @@ The rubric was written for a Laravel/PHP stack. This project is Next.js. Where a
 | ID | Result | Finding |
 |---|---|---|
 | CI-01 | **FAIL** | No `.github/workflows/` directory; no CI configuration exists at all |
-| CI-02 | N/A | No CI — equivalent (`next lint`) also not scripted |
-| CI-03 | N/A | No CI — equivalent (`tsc --noEmit`) passes locally but runs nowhere automatically |
+| CI-02 | **FAIL** | `next lint` is the equivalent of Pint — it exists and is configured, but runs nowhere automatically |
+| CI-03 | **FAIL** | `tsc --noEmit` is the equivalent of PHPStan — passes locally but is never invoked in CI |
 | CI-04 | **FAIL** | No CI to run the test suite |
 | CI-05 | **FAIL** | No workflow to trigger on push or PR |
 | CI-06 | **FAIL** | No CI means no merge blocking |
@@ -154,7 +154,7 @@ The rubric was written for a Laravel/PHP stack. This project is Next.js. Where a
 | Section | Pass | Fail | N/A | Applicable |
 |---|---|---|---|---|
 | ENV | 1 | 2 | 3 | 3 |
-| CI | 0 | 4 | 3 | 4 |
+| CI | 0 | 6 | 1 | 6 |
 | LOG | 2 | 0 | 3 | 2 |
 | SEC | 0 | 4 | 2 | 4 |
 | DOC | 1 | 4 | 3 | 5 |
@@ -162,9 +162,9 @@ The rubric was written for a Laravel/PHP stack. This project is Next.js. Where a
 | ERR | 0 | 1 | 4 | 1 |
 | TEST | 4 | 1 | 1 | 5 |
 | RUN | 3 | 1 | 3 | 4 |
-| **Total** | **16** | **17** | **22** | **33** |
+| **Total** | **16** | **19** | **20** | **35** |
 
-**16 / 33 applicable items pass (48.5%)**
+**16 / 35 applicable items pass (45.7%)**
 
 ---
 
@@ -175,8 +175,8 @@ The rubric was written for a Laravel/PHP stack. This project is Next.js. Where a
 | ENV-03 | N/A |
 | ENV-04 | PASS |
 | CI-01 | **FAIL** |
-| CI-02 | N/A |
-| CI-03 | N/A |
+| CI-02 | **FAIL** |
+| CI-03 | **FAIL** |
 | CI-04 | **FAIL** |
 | SEC-01 | **FAIL** |
 | SEC-02 | **FAIL** |
@@ -188,7 +188,7 @@ The rubric was written for a Laravel/PHP stack. This project is Next.js. Where a
 | RUN-03 | N/A |
 | RUN-04 | PASS |
 
-**6 MUST items fail.**
+**8 MUST items fail.**
 
 ---
 
@@ -196,13 +196,13 @@ The rubric was written for a Laravel/PHP stack. This project is Next.js. Where a
 
 > **Do not ship.**
 
-6 blocking items fail. The app's core logic and type safety are solid, but there is no CI, no security headers, and the README tells a new developer nothing about this project.
+8 blocking items fail. The app's core logic and type safety are solid, but there is no CI, no security headers, and the README tells a new developer nothing about this project.
 
 ### Blocking failures (fix first)
 
 | Priority | ID | Fix |
 |---|---|---|
-| 1 | CI-01, CI-04–CI-06 | Add `.github/workflows/ci.yml` — lint, type-check, test on every push |
+| 1 | CI-01–CI-06 | Add `.github/workflows/ci.yml` — lint, type-check, test on every push |
 | 2 | SEC-01–04 | Add security headers in `next.config.ts` via the `headers()` config |
 | 3 | DOC-01–03, 06 | Rewrite README with project description, prerequisites, setup, and test command |
 
