@@ -51,7 +51,7 @@ The rubric targets a Laravel/PHP stack. This project is Next.js 16. PHP-specific
 | CI-04 | **PASS** | `npm test` (Vitest) runs as step 6; 44 tests, 5 files, all pass |
 | CI-05 | **PASS** | Workflow triggers on `push: branches: ["**"]` and `pull_request: branches: ["**"]` |
 | CI-06 | **PASS** | Each step is a separate `run:` command; non-zero exit fails the job and blocks merge |
-| CI-07 | N/A | No secrets in the workflow file |
+| CI-07 | **PASS** | Workflow contains no hardcoded secrets, tokens, API keys, or credentials |
 
 ---
 
@@ -75,7 +75,7 @@ The rubric targets a Laravel/PHP stack. This project is Next.js 16. PHP-specific
 | SEC-02 | **PASS** | `X-Frame-Options: SAMEORIGIN` set in `next.config.ts` |
 | SEC-03 | **PASS** | `X-XSS-Protection: 1; mode=block` set in `next.config.ts` |
 | SEC-04 | **PASS** | All headers applied globally via `headers()` with `source: "/(.*)"` — every route is covered |
-| SEC-05 | N/A | `Kernel.php` is Laravel-specific; the Next.js equivalent (`next.config.ts` headers) satisfies SEC-04 |
+| SEC-05 | **PASS** | Laravel `Kernel.php` equivalent is global header registration in `next.config.ts`; headers are applied through `headers()` |
 | SEC-06 | N/A | No API routes or authenticated endpoints |
 
 ---
@@ -90,7 +90,7 @@ The rubric targets a Laravel/PHP stack. This project is Next.js 16. PHP-specific
 | DOC-04 | N/A | No `.env` configuration required |
 | DOC-05 | N/A | No database or migrations |
 | DOC-06 | **PASS** | Commands table includes `npm test` with description |
-| DOC-07 | N/A | No Pint/PHPStan; `npm run lint` and `npx tsc --noEmit` are in the commands table |
+| DOC-07 | **PASS** | README documents the Next.js equivalents: `npm run lint` and `npx tsc --noEmit` are both in the commands table |
 | DOC-08 | **PASS** | Commands table includes `npm run dev` with description |
 
 ---
@@ -154,17 +154,17 @@ The rubric targets a Laravel/PHP stack. This project is Next.js 16. PHP-specific
 | Section | Pass | Fail | N/A | Applicable |
 |---|---|---|---|---|
 | ENV | 3 | 0 | 3 | 3 |
-| CI | 6 | 0 | 1 | 6 |
+| CI | 7 | 0 | 0 | 7 |
 | LOG | 2 | 0 | 3 | 2 |
-| SEC | 4 | 0 | 2 | 4 |
-| DOC | 5 | 0 | 3 | 5 |
+| SEC | 5 | 0 | 1 | 5 |
+| DOC | 6 | 0 | 2 | 6 |
 | PHP/TS | 5 | 0 | 0 | 5 |
 | ERR | 1 | 0 | 4 | 1 |
 | TEST | 5 | 0 | 1 | 5 |
 | RUN | 4 | 0 | 3 | 4 |
-| **Total** | **35** | **0** | **20** | **35** |
+| **Total** | **38** | **0** | **17** | **38** |
 
-**35 / 35 applicable items pass (100%)**
+**38 / 38 applicable items pass (100%)**
 
 ---
 
@@ -182,7 +182,7 @@ The rubric targets a Laravel/PHP stack. This project is Next.js 16. PHP-specific
 | SEC-02 | Yes | **PASS** |
 | SEC-03 | Yes | **PASS** |
 | SEC-04 | Yes | **PASS** |
-| SEC-05 | No | N/A |
+| SEC-05 | Yes | **PASS** |
 | PHP-02 | Yes | **PASS** |
 | TEST-01 | Yes | **PASS** |
 | RUN-03 | No | N/A |
@@ -196,7 +196,7 @@ The rubric targets a Laravel/PHP stack. This project is Next.js 16. PHP-specific
 
 > **Ship.**
 
-All MUST items pass. 35/35 applicable items pass (100%).
+All MUST items pass. 38/38 applicable items pass (100%).
 
 ### Follow-up note
 
